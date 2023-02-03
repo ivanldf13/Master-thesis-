@@ -1,0 +1,66 @@
+---
+title: "9. POS"
+author: "Iván Lorenci de Francisco"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r Loading Packages}
+library(udpipe)
+library(furrr)
+library(spacyr)
+library(quanteda)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(future)
+library(tidytext)
+library(ggplot2)
+```
+
+```{r Loading Files}
+load("POS.Rockefeller.Rda")
+load("POS.NOUNS.Rda")
+```
+
+```{r Words and the top}
+POS.Rockefeller %>% 
+  group_by(doc_id) %>% 
+  count(sort = TRUE, upos) %>% 
+  arrange(doc_id, desc(n))
+
+proportion_upos <- POS.Rockefeller %>% 
+  filter(upos != "PUNCT") %>% 
+  group_by(doc_id, upos) %>% 
+  summarise(n = sum(n)) %>% 
+  mutate(prop_upos = n/sum(n)) %>% 
+  group_by(doc_id) %>% 
+  filter(upos %in% c("NOUN", "ADJ", "VERB", "DET", "ADV", "ADP")) %>% 
+  mutate(year = str_match(string = doc_id, "\\d{4}"),
+         year = as.numeric(year))
+  #        group = ifelse(upos == "NOUN", "Noun",
+  #                       "Adjective & Verb"))
+  
+POS.Rockefeller %>% 
+  filter(upos == "X") %>% 
+  arrange(desc(n))
+
+```
+
+```{r Graphic proportion}
+proportion_upos %>% 
+  ggplot(aes(year, prop_upos, color = upos)) +
+  geom_line() 
+```
+
+
+```{r POS.NOUNS}
+POS.NOUNS %>% 
+  slice_max(n, n = 10) %>% 
+  
+```
+

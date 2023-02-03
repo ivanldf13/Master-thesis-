@@ -1,0 +1,41 @@
+---
+title: "Noun Clustering"
+author: "Iván"
+date: "2022-08-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = TRUE,
+	warning = TRUE
+)
+```
+# Loading the needed packages and data files
+```{r}
+# Loading the needed packages
+library(future)
+library(ggplot2)
+library(dplyr)
+library(shiny)
+library(udpipe)
+library(furrr)
+library(spacyr)
+library(quanteda)
+library(tidyr)
+library(stringr)
+library(FactoMineR)
+library(factoextra)
+library(tidytext)
+library(corrplot)
+library(FactoInvestigate)
+library(Factoshiny)
+
+# Loading the needed data files
+load("POS.NOUNS.Rda")
+load("POS.Rockefeller.Rda")
+POS.NOUNS
+POS.Rockefeller
+```
+

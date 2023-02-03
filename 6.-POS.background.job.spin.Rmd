@@ -1,0 +1,68 @@
+
+```{r }
+# Loading the needed packages ----
+library(udpipe)
+library(furrr)
+library(spacyr)
+library(quanteda)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(udpipe)
+library(future)
+library(tidytext)
+
+# Setting the WD ----
+setwd("~/Desktop/R Stuff/RProjects/Annual Reports")
+# Loading the needed files
+load("dc.p.final.Rda")
+
+# Mandatory Step for the POS ----
+# udpipe_download_model("english-ewt")
+
+plan(multisession, workers = 4) 
+pos.model <- udpipe_load_model("english-ewt-ud-2.5-191206.udpipe")
+
+ftest <- function(text) {
+  res <- udpipe(x = text, "english-ewt", model_dir ="/Users/ivanlorenci/Desktop/R Stuff/RProjects/Annual Reports") %>% 
+    as.data.frame() %>% 
+    select(token,upos)
+  return(res)
+}
+
+# POS with lemmanization ----
+# ftest <- function(text) {
+#   res <- udpipe(x = text, "english-ewt", model_dir ="/Users/ivanlorenci/Desktop/R Stuff/RProjects/Annual Reports") %>% 
+#     as.data.frame() %>% 
+#     select(token, lemma, upos)
+#   return(res)
+# }
+
+
+
+POS.Rockefeller <- dc.p.final %>%
+  unnest_sentences("text", text) %>% 
+  # filter(row_number() %in% seq(1,100, 1)) %>%
+  mutate(text = str_squish(text)) %>%
+  mutate(tag = future_map(text,ftest)) %>%
+  unnest(tag) %>% 
+  group_by(doc_id) %>% 
+  count(token, upos)
+
+save(POS.Rockefeller, file = "POS.Rockefeller.Rda")
+
+# POS in a given year
+
+# POS.Rockefeller %>% 
+#   group_by(doc_id) %>% 
+#   count(token, upos)
+```
+
+
+
+---
+title: 6.-POS.background.job.R
+author: ivanlorenci
+date: '2022-10-21'
+
+---
