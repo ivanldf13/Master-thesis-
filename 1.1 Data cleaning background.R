@@ -779,7 +779,8 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "communitybased", "community based"),
          text = str_replace_all(text, "programrelated", "program related"),
          text = str_replace_all(text, "climateconscious", "climate-conscious"),
-         text = str_replace_all(text, "climaterelated", "climate-related"))
+         text = str_replace_all(text, "climaterelated", "climate-related"),
+         text = str_replace_all(text, "nongovernmental", "non-governmental"))
 
 
 
@@ -1532,7 +1533,8 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "communitybased", "community based"),
          text = str_replace_all(text, "programrelated", "program related"),
          text = str_replace_all(text, "climateconscious", "climate-conscious"),
-         text = str_replace_all(text, "climaterelated", "climate-related"))
+         text = str_replace_all(text, "climaterelated", "climate-related"),
+         text = str_replace_all(text, "nongovernmental", "non-governmental"))
 
          
          
