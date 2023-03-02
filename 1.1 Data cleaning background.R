@@ -780,7 +780,14 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "programrelated", "program related"),
          text = str_replace_all(text, "climateconscious", "climate-conscious"),
          text = str_replace_all(text, "climaterelated", "climate-related"),
-         text = str_replace_all(text, "nongovernmental", "non-governmental"))
+         text = str_replace_all(text, "nongovernmental", "non-governmental"),
+         text = str_replace_all(text, "educatlon", "education"),
+         text = str_replace_all(text, "materlals", "non-governmental"),
+         text = str_replace_all(text, "chlldcare", "childcare"),
+         text = str_replace_all(text, "afncan", "african"),
+         text = str_replace_all(text, "socialservice", "social-service"),
+         text = str_replace_all(text, "nonprofit", "non-profit"),
+         text = str_replace_all(text, "theformation", "the formation"))
 
 
 
@@ -1534,7 +1541,14 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "programrelated", "program related"),
          text = str_replace_all(text, "climateconscious", "climate-conscious"),
          text = str_replace_all(text, "climaterelated", "climate-related"),
-         text = str_replace_all(text, "nongovernmental", "non-governmental"))
+         text = str_replace_all(text, "nongovernmental", "non-governmental"),
+         text = str_replace_all(text, "educatlon", "education"),
+         text = str_replace_all(text, "materlals", "non-governmental"),
+         text = str_replace_all(text, "chlldcare", "childcare"),
+         text = str_replace_all(text, "afncan", "african"),
+         text = str_replace_all(text, "socialservice", "social-service"),
+         text = str_replace_all(text, "nonprofit", "non-profit"),
+         text = str_replace_all(text, "theformation", "the formation"))
 
          
          

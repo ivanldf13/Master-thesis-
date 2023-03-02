@@ -7,7 +7,7 @@ load("dc.p.final.Rda")
 corpus <- corpus(dc.np.final, docid_field = "Year")
 corpus.tokenised <- tokens(corpus)
 options(max.print = 5000)
-kwic(corpus.tokenised, pattern = "rresearch")
+kwic(corpus.tokenised, pattern = "institutmn")
 
 
 # , valuetype = "regex"
@@ -15,10 +15,8 @@ kwic(corpus.tokenised, pattern = "rresearch")
 # TODO what to do with "psy", agriculturetural, iiinternationall, coriceptual, fundingfor, its
 # TODO guaianalysis, carreldakin, glycerin salt, |, schoololarships,  ■, louisianalysis, sciencebased, 
 # TODO of a, +, ¥, and the, artistinresidence, at risk, cdinate, climatecconscious, climaterelated
-# TODO previ, profes, deem, mem,  foundationnew, 
-sliencec
-rresearch
-educatlon
+# TODO previ, profes, deem, mem,  foundationnew, rresearch, bepobt, drought tolerant, artistinresidence
+
 
 dc.np.final %>% 
   mutate(extracted = str_extract_all(text, "berlin(?=\\sdahlem)")) %>%
