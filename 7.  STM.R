@@ -29,8 +29,13 @@ metadata <- dc.np.final %>%
   # as.matrix()
   # b4.after = ifelse(year>1960, "after 1960", "before 1960")) %>% 
 
+# Creating the Dataframe
 dfm <- wordnumperyear %>% 
   cast_dfm(document = Year, term = words, value = n)
+
+wordnumperyear %>% 
+  separate(words, c("FrstWord", "SndWord"), sep = "\\s") %>% 
+  filter(!is.na(SndWord))
 
 # To choose how many topics will be better ----
 # Exclusivity and semcoh (semantic coherence) should be as high as possible.
@@ -72,13 +77,13 @@ res10 <- stm(documents=dfm,
              init.type = "Spectral")
 save(res10, file = "res10.Rda")
 
-res11 <- stm(documents=dfm,
-             K=11,
+res9 <- stm(documents=dfm,
+             K=9,
              prevalence = metadata,
              max.em.its = 150,
              # data=meta,
              init.type="Spectral")
-save(res11, file = "res11.Rda")
+save(res9, file = "res9.Rda")
 
 ## with b4.after ----
 # res10.b4 <- stm(documents=dfm,
@@ -93,19 +98,19 @@ save(res11, file = "res11.Rda")
 
 # what are the words belonging to each topic? ----
 labelTopics(res10, n = 20)
-topics.dfm.10 <- labelTopics(res10, n =15)
+topics.dfm.10 <- labelTopics(res10, n =20)
 save(topics.dfm.10, file = "topics.dfm.10.Rda")
 
-labelTopics(res11, n = 15)
-topics.dfm.11 <- labelTopics(res11, n =15)
-save(topics.dfm.11, file = "topics.dfm.11.Rda")
+labelTopics(res9, n = 15)
+topics.dfm.9 <- labelTopics(res9, n =15)
+save(topics.dfm.9, file = "topics.dfm.9.Rda")
 
 labelTopics(res20, n = 15)
 topics.dfm.20 <- labelTopics(res20, n =15)
 save(topics.dfm.20, file = "topics.dfm.20.Rda")
 
 topics.dfm.10$frex
-topics.dfm.11$frex
+topics.dfm.9$frex
 
 # Getting the most salient reports for a given topic
 thoughts10 <- findThoughts(res10, topics = 9, texts = dc.np.final$Year, n = 5)$docs[[1]]
@@ -193,7 +198,7 @@ plot(mod.out.corr, c(1:8), vlabels = c("University", "Health", "army", "school",
 beta <- tidy(res10, matrix = "beta")
 
 beta %>% 
-  filter(topic %in% c(1, 2, 3, 5, 9)) %>% 
+  filter(topic %in% c(1, 2, 5, 7)) %>% 
   group_by(topic) %>% 
   slice_max(beta, n = 10)
 # maybe create an object from this
@@ -213,7 +218,7 @@ beta %>%
 gamma <- tidy(res10, matrix = "gamma")
 
 gamma %>% 
-  filter(topic %in% c(1, 2, 3, 5, 9)) %>% 
+  filter(topic %in% c(1, 2, 5, 7)) %>% 
   ggplot(aes(x= document, y = gamma, linetype = factor(topic)))+
   geom_line()
 
@@ -233,7 +238,7 @@ gamma %>%
 
 # Graph for the statistically significant topics ----
 gamma %>% 
-  filter(topic %in% c(1, 2, 5, 10)) %>%
+  filter(topic %in% c(1, 2, 5, 7)) %>%
   ggplot(aes(document, gamma, fill = factor(topic)))+
   geom_col()+
   scale_fill_manual(values = c("#387fc7","#e63cfe", "#af338e", "#97bea1", "#bfbb8a"),

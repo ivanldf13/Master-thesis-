@@ -11,9 +11,6 @@ library(tidytext)
 # library(xlsx)
 # library(ggpage)
 
-
-# Setting the WD ----
-setwd("~/Desktop/R Stuff/RProjects/Annual Reports")
 # Retrieving and reading the documents to be used ----
 Corpus <- readtext("./AR.TXT/*.pdf") 
 
@@ -38,7 +35,7 @@ data.clean.no.punct <- Corpus  %>%
          text = str_remove_all(text, "[:punct:]"),
          text = str_remove_all(text, "[:digit:]"),
          text = str_remove_all(text, "_+"),
-         text = str_remove_all(text, "(\\$|\\~|c~|\\^|\\£|\\^|<>|<|>|¯|>>|⇒|→|>oo|oo|°|±|™)\\w?"),
+         text = str_remove_all(text, "(\\$|\\~|c~|\\^|\\£|\\^|<>|<|>|¯|>>|⇒|→|>oo|\\boo\\b|°|±|™|\\+|\\-|\\¥)\\w?"),
          text = tolower(text),
          text = str_replace_all(text, "wellbeing", "well-being"),
          text = str_remove_all(text,"\\bwe the rockefeller foundation\\b"),
@@ -170,7 +167,6 @@ data.clean.no.punct <- Corpus  %>%
          # text = str_replace_all(text, "com munities", "communities"),
          text = str_replace_all(text, "im\\smunity", "immunity"),
          text = str_replace_all(text, "corpo\\s~", "corpo"),
-         # VESTIN: Je me suis arrêté ici
          
          text = str_replace_all(text, "([a-z]{0,9})\\s\\bration(s?)\\b", "\\1ration\\2"), 
          # text = str_replace_all(text, "corpo ration", "corporation"),
@@ -617,13 +613,13 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "interna tional", "international"),
          text = str_replace_all(text, "addi tional", "additional"),
          text = str_replace_all(text, "aroundadvarices", "around advances"),
-         text = str_replace_all(text, "agricul tural", "agricultural"),
          text = str_replace_all(text, "conferencewas", "conference was"),
          text = str_replace_all(text, "conferencewith", "conference with"),
          text = str_replace_all(text, "influenceof", "influence of"),
          text = str_replace_all(text, "evidencethat", "evidence that"),
          text = str_replace_all(text, "residenceproperty", "residence property"),
-         text = str_replace_all(text, "cul tural", "cultural"),
+         text = str_replace_all(text, "agricul tural", "agricultural"),
+         text = str_replace_all(text, "\\bcul tural", "cultural"),
          text = str_replace_all(text, "culnj tural", "cultural"),
          text = str_replace_all(text, "struc tural", "structural"),
          text = str_replace_all(text, "struc ture", "structure"),
@@ -717,7 +713,7 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "instituteofchild", "institute of child"),
          text = str_replace_all(text, "fellowshipsandgrantinatdmpeipingunionmedicalcoilegerf", "fellowships and grant in aid in peiping union medical college"),
          text = str_replace_all(text, "thefieldof", "the field of"),
-         text = str_replace_all(text, "analy sis", "analysis"),
+         
          text = str_replace_all(text, "paraly sis", "paralysis"),
          text = str_replace_all(text, "tuberculo sis", "tuberculosis"),
          text = str_replace_all(text, "mito sis", "mitosis"),
@@ -728,7 +724,62 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "jniversity", "university"),
          text = str_replace_all(text, "rcfkefeller", "rockefeller"),
          text = str_replace_all(text, "hworm", "hookworm"),
-         text = str_replace_all(text, "sch", "school"))
+         text = str_replace_all(text, "sch", "school"),
+         text = str_replace_all(text, "appointedfrom", "appointed from"),
+         text = str_replace_all(text, "creativityculture", "creativity culture"),
+         text = str_replace_all(text, "coss", "costs"),
+         text = str_replace_all(text, "crosstheme", "cross-theme"),
+         text = str_replace_all(text, "esearch", "research"),
+         text = str_replace_all(text, "schoolistosomiasis", "schistosomiasis"),
+         text = str_replace_all(text, "cerate", "coöperate"),
+         text = str_replace_all(text, "sciencebased", "science-based"),
+         text = str_replace_all(text, "appointedfrom", "appointed from"),
+         text = str_replace_all(text, "annualreport", "annual-report"),
+         text = str_replace_all(text, "artis ans", "artisans"),
+         text = str_replace_all(text, "artis anal", "artisanal"),
+         text = str_replace_all(text, "agricul", "agriculture"),
+         text = str_replace_all(text, "agron omy", "agronomy"),
+         text = str_replace_all(text, "agron", "agronomy"),
+         text = str_replace_all(text, "rresearch", "research"),
+         text = str_replace_all(text, "boredhole", "bored-hole"),
+         text = str_replace_all(text, "collegeof", "college of"),
+         text = str_replace_all(text, "cciences", "sciences"),
+         text = str_replace_all(text, "intellectualproperty", "intellectual-property"),
+         text = str_replace_all(text, "technologytransfer", "technology transfer"),
+         text = str_replace_all(text, "sciencebased", "science-based"),
+         text = str_replace_all(text, "anal ysis", "analysis"),
+         text = str_replace_all(text, "ana \\| ysis", "analysis"),
+         text = str_replace_all(text, "ana ysis", "analysis"),
+         text = str_replace_all(text, "ana lyze", "analyze"),
+         text = str_replace_all(text, "centra", "centro"),
+         text = str_replace_all(text, "childh", "childhood"),
+         text = str_replace_all(text, "hong kong", "hong-kong"),
+         text = str_replace_all(text, "ana lyze", "analyze"),
+         text = str_replace_all(text, "prob lem(s?)", "problem"),
+         text = str_replace_all(text, "prob ably", "probably"),
+         text = str_replace_all(text, "cerating", "cooperating"),
+         text = str_replace_all(text, "concentrotion", "concentration"),
+         text = str_replace_all(text, "\\bnternational", "international"), 
+         text = str_replace_all(text, "\\bnternationa", "international"),
+         text = str_replace_all(text, "middleincome", "middle-income"),
+         text = str_replace_all(text, "coriceptual", "conceptual"),
+         text = str_replace_all(text, "fundingfor", "funding for"),
+         text = str_replace_all(text, "partlclpatlon", "participation"),
+         text = str_replace_all(text, "actlvlties", "activities"),
+         text = str_replace_all(text, "instttute", "institute"),
+         text = str_replace_all(text, "lts", "its"),
+         text = str_replace_all(text, "bepobt", "report"),
+         text = str_replace_all(text, "foundationnew", "foundation new"),
+         text = str_replace_all(text, "carreldakin", "carrel-dakin"),
+         text = str_replace_all(text, "cerative", "cooperative"),
+         text = str_replace_all(text, "artistinresidence", "artist in residence"),
+         text = str_replace_all(text, "andfor", "and for"),
+         text = str_replace_all(text, "trainingfor", "training for"),
+         text = str_replace_all(text, "distributionand", "distribution and"),
+         text = str_replace_all(text, "communitybased", "community based"),
+         text = str_replace_all(text, "programrelated", "program related"),
+         text = str_replace_all(text, "climateconscious", "climate-conscious"),
+         text = str_replace_all(text, "climaterelated", "climate-related"))
 
 
 
@@ -737,7 +788,7 @@ data.clean.punct <- Corpus  %>%
   mutate(text = str_replace_all(text, "\\n", " "),
          text = str_remove_all(text, "[:digit:]"),
          text = str_remove_all(text, "_+"),
-         text = str_remove_all(text, "(\\$|\\~|c~|\\^|\\£|\\^|<>|<|>|¯|>>|⇒|→|>oo|oo|°|±|™)\\w?"),
+         text = str_remove_all(text, "(\\$|\\~|c~|\\^|\\£|\\^|<>|<|>|¯|>>|⇒|→|>oo|\\boo\\b|°|±|™|\\+|\\-|\\¥)\\w?"),
          text = tolower(text),
          text = str_replace_all(text, "wellbeing", "well-being"),
          text = str_remove_all(text,"\\bwe the rockefeller foundation\\b"),
@@ -869,8 +920,7 @@ data.clean.punct <- Corpus  %>%
          # text = str_replace_all(text, "com munities", "communities"),
          text = str_replace_all(text, "im\\smunity", "immunity"),
          text = str_replace_all(text, "corpo\\s~", "corpo"),
-         # VESTIN: Je me suis arrêté ici
-         
+
          text = str_replace_all(text, "([a-z]{0,9})\\s\\bration(s?)\\b", "\\1ration\\2"), 
          # text = str_replace_all(text, "corpo ration", "corporation"),
          # text = str_replace_all(text, "prepa ration", "preparation"),
@@ -1323,7 +1373,7 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "influenceof", "influence of"),
          text = str_replace_all(text, "evidencethat", "evidence that"),
          text = str_replace_all(text, "residenceproperty", "residence property"),
-         text = str_replace_all(text, "cul tural", "cultural"),
+         text = str_replace_all(text, "\\bcul tural", "cultural"),
          text = str_replace_all(text, "culnj tural", "cultural"),
          text = str_replace_all(text, "struc tural", "structural"),
          text = str_replace_all(text, "struc ture", "structure"),
@@ -1417,7 +1467,6 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "instituteofchild", "institute of child"),
          text = str_replace_all(text, "fellowshipsandgrantinatdmpeipingunionmedicalcoilegerf", "fellowships and grant in aid in peiping union medical college"),
          text = str_replace_all(text, "thefieldof", "the field of"),
-         text = str_replace_all(text, "analy sis", "analysis"),
          text = str_replace_all(text, "paraly sis", "paralysis"),
          text = str_replace_all(text, "tuberculo sis", "tuberculosis"),
          text = str_replace_all(text, "mito sis", "mitosis"),
@@ -1428,7 +1477,63 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "jniversity", "university"),
          text = str_replace_all(text, "rcfkefeller", "rockefeller"),
          text = str_replace_all(text, "hworm", "hookworm"),
-         text = str_replace_all(text, "sch", "school"))
+         text = str_replace_all(text, "sch", "school"),
+         text = str_replace_all(text, "appointedfrom", "appointed from"),
+         text = str_replace_all(text, "creativityculture", "creativity culture"),
+         text = str_replace_all(text, "coss", "costs"),
+         text = str_replace_all(text, "crosstheme", "cross-theme"),
+         text = str_replace_all(text, "esearch", "research"),
+         text = str_replace_all(text, "schoolistosomiasis", "schistosomiasis"),
+         text = str_replace_all(text, "cerate", "coöperate"),
+         text = str_replace_all(text, "sciencebased", "science-based"),
+         text = str_replace_all(text, "appointedfrom", "appointed from"),
+         text = str_replace_all(text, "annualreport", "annual-report"),
+         text = str_replace_all(text, "artis ans", "artisans"),
+         text = str_replace_all(text, "artis anal", "artisanal"),
+         text = str_replace_all(text, "agricul", "agriculture"),
+         text = str_replace_all(text, "agron omy", "agronomy"),
+         text = str_replace_all(text, "agron", "agronomy"),
+         text = str_replace_all(text, "rresearch", "research"),
+         text = str_replace_all(text, "boredhole", "bored-hole"),
+         text = str_replace_all(text, "collegeof", "college of"),
+         text = str_replace_all(text, "cciences", "sciences"),
+         text = str_replace_all(text, "intellectualproperty", "intellectual-property"),
+         text = str_replace_all(text, "technologytransfer", "technology transfer"),
+         text = str_replace_all(text, "sciencebased", "science-based"),
+         text = str_replace_all(text, "anal ysis", "analysis"),
+         text = str_replace_all(text, "ana \\| ysis", "analysis"),
+         text = str_replace_all(text, "ana ysis", "analysis"),
+         text = str_replace_all(text, "ana lyze", "analyze"),
+         text = str_replace_all(text, "centra", "centro"),
+         text = str_replace_all(text, "childh", "childhood"),
+         text = str_replace_all(text, "hong kong", "hong-kong"),
+         text = str_replace_all(text, "ana lyze", "analyze"),
+         text = str_replace_all(text, "prob lem(s?)", "problem"),
+         text = str_replace_all(text, "prob ably", "probably"),
+         text = str_replace_all(text, "cerating", "cooperating"),
+         text = str_replace_all(text, "concentrotion", "concentration"),
+         text = str_replace_all(text, "\\bnternational", "international"), 
+         text = str_replace_all(text, "\\bnternationa", "international"),
+         text = str_replace_all(text, "middleincome", "middle-income"),
+         text = str_replace_all(text, "coriceptual", "conceptual"),
+         text = str_replace_all(text, "fundingfor", "funding for"),
+         text = str_replace_all(text, "partlclpatlon", "participation"),
+         text = str_replace_all(text, "actlvlties", "activities"),
+         text = str_replace_all(text, "instttute", "institute"),
+         text = str_replace_all(text, "lts", "its"),
+         text = str_replace_all(text, "bepobt", "report"),
+         text = str_replace_all(text, "foundationnew", "foundation new"),
+         text = str_replace_all(text, "carreldakin", "carrel-dakin"),
+         text = str_replace_all(text, "cerative", "cooperative"),
+         text = str_replace_all(text, "artistinresidence", "artist in residence"),
+         text = str_replace_all(text, "andfor", "and for"),
+         text = str_replace_all(text, "trainingfor", "training for"),
+         text = str_replace_all(text, "distributionand", "distribution and"),
+         text = str_replace_all(text, "communitybased", "community based"),
+         text = str_replace_all(text, "programrelated", "program related"),
+         text = str_replace_all(text, "climateconscious", "climate-conscious"),
+         text = str_replace_all(text, "climaterelated", "climate-related"))
+
          
          
 
@@ -1464,7 +1569,7 @@ tokenised.no.punct <- data.clean.no.punct %>%
                         "agric", "inst", "ing", "ap", "pre", "r.r", "pro",
                         "ooo", "d.c", "san", "coll", "tions", "dc", "acad", 
                         "cont", "mex", "ry", "ser", "cap", "med", "natl", "phd",
-                        "med", "meph", "xiv", "xvi", "xv", "mada", "bmr", "ingagr",
+                        "med", "meph", "xi", "xii", "xiv", "xvi", "xv", "mada", "bmr", "ingagr",
                         "annual","report","ny", "wwwrockefellerfoundationorgwhat", 
                         "appointed", "programs", "table", "instalments", "remaining", 
                         "fig", "hc", "Ih", "|h", "lh", "percentage", "dh", "pc", 
@@ -1500,7 +1605,7 @@ tokenised.punct <- data.clean.punct %>%
                         "agric", "inst", "ing", "ap", "pre", "r.r", "pro",
                         "ooo", "d.c", "san", "coll", "tions", "dc", "acad", 
                         "cont", "mex", "ry", "ser", "cap", "med", "natl", "phd",
-                        "med", "meph", "xiv", "xvi", "xv", "mada", "bmr", "ingagr",
+                        "med", "meph", "xi", "xii", "xiv", "xvi", "xv", "mada", "bmr", "ingagr",
                         "annual","report","ny", "wwwrockefellerfoundationorgwhat", 
                         "appointed", "programs", "table", "instalments", "remaining", 
                         "fig", "hc", "Ih", "|h", "lh", "percentage", "dh", "pc", 
@@ -2279,3 +2384,15 @@ testtf <- tokenised.no.punct.nsw %>%
   arrange(Year)
 
 save(testtf, file = "testtf.Rda")
+
+# Comparing the number of words of early and late reports ----
+freq.rep <- summary(corpus(dc.np.final)) %>% 
+  select(Text, Tokens, Year)
+
+freq.rep %>% 
+  ggplot(aes(Year, Tokens)) +
+  geom_line() +
+  labs(y = "Number of words per year") +
+  theme(legend.position = "none")
+
+ggsave("number.of.words.per.year.pdf", units = "cm", width = 26, height = 14)

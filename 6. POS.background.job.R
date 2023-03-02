@@ -11,7 +11,7 @@ library(future)
 library(tidytext)
 
 # Setting the WD ----
-setwd("~/Desktop/R Stuff/RProjects/Annual Reports")
+# setwd("~/Desktop/R Stuff/RProjects/Annual Reports")
 # Loading the needed files
 load("dc.p.final.Rda")
 

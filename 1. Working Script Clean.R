@@ -12,8 +12,7 @@ library(xlsx)
 library(ggpage)
 
 
-# Setting the WD ----
-setwd("~/Desktop/R Stuff/RProjects/Annual Reports")
+
 # Retrieving and reading the documents to be used ----
 Corpus <- readtext("./AR.TXT/*.pdf") 
 # data.txt <- readtext("./AR.TXT/*.txt")
@@ -29,7 +28,12 @@ load("Corpus.Rda")
 
 # Create the Stopwords (en) objects ----
 stop <- tibble(words = stopwords::data_stopwords_stopwordsiso$en)
+# Changing the type of variable for doc_id
 
+Corpus <- Corpus %>% 
+  mutate(Year = str_match(string = doc_id, "\\d{4}"),
+         Year = as.numeric(Year)) %>% 
+  select(-doc_id)
 # Cleaning the most salient things to erase, unless punctuation ----
 # data.clean is the file before the unnest function, with the 1st layer of
 # cleaning (words wrongly written) & lower cases
@@ -738,7 +742,7 @@ save(dc.p.final, file= "dc.p.final.Rda")
 
 # Grouping by year and counting words ----
 wordnumperyear <- tokenised.no.punct.nsw %>% 
-  group_by(doc_id) %>% 
+  group_by(Year) %>% 
   count(words, sort=TRUE) %>% 
   top_n(n = 500, n)
 
@@ -749,12 +753,12 @@ save(wordnumperyear, file = "wordnumperyear.Rda")
 ## Top x of the whole period ----
 wordnumperyear %>% 
   top_n(n=15, n) %>%
-  arrange(doc_id) %>% 
+  arrange(Year) %>% 
   print(n=25)
 
 ## Graph per year ----
 wordnumperyear %>% 
-  filter(doc_id == "AR-1965") %>% 
+  filter(Year == "1965") %>% 
   top_n(n=35, n) %>%
   ggplot(aes(n, reorder(words,n))) +
   geom_col() +
@@ -763,9 +767,7 @@ wordnumperyear %>%
 
 # Creating a table per period for the whole of the corpus ----
 table.per.period <- tokenised.no.punct.nsw %>% 
-  mutate(year = str_extract(doc_id, "\\d{4}"), 
-         year = as.numeric(year),
-         period = cut(year,c(0, 1919, 1929, 1939, 1945, 1955, 1965, 1975, 1985,
+  mutate(period = cut(Year,c(0, 1919, 1929, 1939, 1945, 1955, 1965, 1975, 1985,
                              1995, 2005, 2014), 
                       labels = c("1913-1919", "1920-1929", "1930-1939", "1940-1945",
                                  "1946-1955", "1956-1965", "1966-1975", "1976-1985",
@@ -824,16 +826,16 @@ openxlsx::write.xlsx(output, file="test.xlsx")
 
 # TF-IDF 
 testtf <- tokenised.no.punct.nsw %>% 
-  group_by(doc_id) %>% 
+  group_by(Year) %>% 
   count(words, sort=TRUE) %>% 
   top_n(n=100, n) %>% 
-  arrange(doc_id)
+  arrange(Year)
 
 save(testtf, file = "testtf.Rda")
 
 # table
 result.testtf <- testtf %>% 
-  bind_tf_idf(words, doc_id, n)
+  bind_tf_idf(words, Year, n)
 
 # TF-IDF graph per period as previously defined ----
 table.per.period %>% 
@@ -843,13 +845,14 @@ table.per.period %>%
   geom_col()+
   facet_wrap(~period, scales = "free_y")+
   scale_y_reordered()+
-  labs(y="TOP 20")+
+  labs(y="TF-IDF TOP 20")+
   theme(legend.position = "none")
 
 # TF-IDF graph per period chosen ----
 table.per.period %>% 
   bind_tf_idf(words, period, n) %>% 
-  filter(period %in% c("1913-1919", "1920-1929", "1996-2005")) %>%
+  filter(period %in% c("1940-1945",
+                       "1946-1955", "1956-1965")) %>%
   top_n(tf_idf, n = 60) %>% 
   ggplot(aes(tf_idf, reorder_within(words, tf_idf, period), group = period))+
   geom_col()+

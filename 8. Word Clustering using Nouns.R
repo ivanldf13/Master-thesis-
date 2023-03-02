@@ -52,39 +52,33 @@ correspondance.matrix.POS <-
   spread(key = token, value = n) %>% 
   tibble::column_to_rownames("Year")
 
+# We recode the NAs in the correspondance.matrix.POS for 0s
+correspondance.matrix.POS[is.na(correspondance.matrix.POS)] <- 0
+
+# Correspondance matrix image
 knitr::kable(correspondance.matrix.POS[1:5,1:5]) %>% 
   save_kable(file = "CA_ppt.pdf")
 
 # Looking whether there is a problem with a row ----
 POS.NOUNS %>% 
-  filter(Year == 2009) %>% 
+  filter(Year == 2008) %>% 
   arrange(desc(n))
+
+# Getting the names of the rows to check which AR is missing
+rownames(correspondance.matrix.POS)
 
 CA.NOUNS$row$contrib[,2] %>% 
   sort(., decreasing = TRUE) %>% 
   head(., n= 5)
 
-correspondance.matrix.POS[is.na(correspondance.matrix.POS)] <- 0
-nrow(correspondance.matrix.POS)
+# Correspondance Analysis
 CA.NOUNS <- CA(correspondance.matrix.POS, ncp = 2)
-
 save(CA.NOUNS, file = "CA.NOUNS.Rda")
 
-# Comparing the number of words of early and late reports ----
-freq.rep <- summary(corpus(dc.np.final)) %>% 
-  select(Text, Tokens, Year)
-
-freq.rep %>% 
-  ggplot(aes(Year, Tokens)) +
-  geom_line() +
-  labs(y = "Number of words per year") +
-  theme(legend.position = "none")
-
-ggsave("number.of.words.per.year.pdf", units = "cm", width = 26, height = 14)
-
-
 # Getting the chi-square ----
-chisq.test(correspondance.matrix.POS)
+chi.test <- chisq.test(correspondance.matrix.POS) 
+chi.test
+dim(correspondance.matrix.POS)
 
 assocstats(correspondance.matrix.POS)
 
@@ -98,7 +92,7 @@ pdf("eigen.values.screeplot.pdf")
 fviz_eig(CA.NOUNS, addlabels = TRUE, ylim = c(0,50))
 dev.off()
 
-# Correlation matrix ----
+# Words correlated with both dimensions ----
 CA.NOUNS$col$cos2[ ,-3:-5] %>%
   .[order(.[,2], decreasing=TRUE),] %>% 
   .[.[,1]>=0.3|.[,2]>=0.3,  ] %>% 
@@ -215,7 +209,7 @@ fviz_ca_biplot(CA.NOUNS, select.row = list(cos2 = 0.29),
   
 ## Looking at the top contributors columns/rows ----
 fviz_ca_biplot(CA.NOUNS, select.row = list(contrib = 10),
-               select.col = list(contrib = 20)) +
+               select.col = list(contrib = 20), repel = TRUE) +
   theme_minimal()
 
 
@@ -224,8 +218,8 @@ fviz_ca_row(CA.NOUNS, select.row = list(contrib = 10))+
   theme_minimal()
 
 ### For columns ----
-fviz_ca_col(CA.NOUNS, select.col = list(contrib = 10))+
-  theme_minimal()
+fviz_ca_col(CA.NOUNS, select.col = list(contrib = 13), title = "Top Row Contributors")+
+  theme_minimal() 
 
 # Contribution Biplotting ----
 fviz_ca_biplot(CA.NOUNS, map="colgreen", arrow = c(FALSE, TRUE),
@@ -267,7 +261,7 @@ merge(wordnumperyear, clusters) %>%
   summarize(n = sum(n)) %>% 
   arrange(desc(n)) %>% 
   bind_tf_idf(words, clust, n) %>% 
-  filter(clust %in% 1:5) %>% 
+  filter(clust %in% 1:3) %>% 
   slice_max(tf_idf , n = 40) %>% 
   ggplot(aes(tf_idf, reorder_within(words, tf_idf, clust))) +
   geom_col() +
