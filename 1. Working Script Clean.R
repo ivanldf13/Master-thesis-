@@ -851,9 +851,9 @@ table.per.period %>%
 # TF-IDF graph per period chosen ----
 table.per.period %>% 
   bind_tf_idf(words, period, n) %>% 
-  filter(period %in% c("1940-1945",
-                       "1946-1955", "1956-1965")) %>%
-  top_n(tf_idf, n = 60) %>% 
+  filter(period %in% c("1946-1955", "1956-1965","1966-1975", "1976-1985",
+                       "1986-1995")) %>%
+  top_n(tf_idf, n = 50) %>% 
   ggplot(aes(tf_idf, reorder_within(words, tf_idf, period), group = period))+
   geom_col()+
   facet_wrap(~period, scales = "free_y")+

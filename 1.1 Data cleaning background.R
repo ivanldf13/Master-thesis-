@@ -787,8 +787,10 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "afncan", "african"),
          text = str_replace_all(text, "socialservice", "social-service"),
          text = str_replace_all(text, "nonprofit", "non-profit"),
-         text = str_replace_all(text, "theformation", "the formation"))
-
+         text = str_replace_all(text, "theformation", "the formation"),
+         text = str_replace_all(text, "towardthe", "toward the"),
+         text = str_replace_all(text, "fiscalequitynew", "fiscal equity new"),
+         text = str_replace_all(text, "annouriced", "announced"))
 
 
 ##Cleaning and creating the data with punctuation ---- 
@@ -1548,7 +1550,10 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "afncan", "african"),
          text = str_replace_all(text, "socialservice", "social-service"),
          text = str_replace_all(text, "nonprofit", "non-profit"),
-         text = str_replace_all(text, "theformation", "the formation"))
+         text = str_replace_all(text, "theformation", "the formation"),
+         text = str_replace_all(text, "towardthe", "toward the"),
+         text = str_replace_all(text, "fiscalequitynew", "fiscal equity new"),
+         text = str_replace_all(text, "annouriced", "announced"))
 
          
          
@@ -1586,7 +1591,7 @@ tokenised.no.punct <- data.clean.no.punct %>%
                         "ooo", "d.c", "san", "coll", "tions", "dc", "acad", 
                         "cont", "mex", "ry", "ser", "cap", "med", "natl", "phd",
                         "med", "meph", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", 
-                        "xvi","xvii", "xviii", "ixx", "xx", "xxii", "xxiii",
+                        "xvi","xvii", "xviii", "xix", "xx", "xxi", "xxii", "xxiii",
                         "mada", "bmr", "ingagr", "annual","report","ny", 
                         "wwwrockefellerfoundationorgwhat", "appointed", "programs", 
                         "table", "instalments", "remaining", "fig", "hc", "Ih", "|h", 
@@ -1623,7 +1628,7 @@ tokenised.punct <- data.clean.punct %>%
                         "ooo", "d.c", "san", "coll", "tions", "dc", "acad", 
                         "cont", "mex", "ry", "ser", "cap", "med", "natl", "phd",
                         "med", "meph", "viii", "ix", "x", "xi", "xii", "xiii", "xiv", "xv", 
-                        "xvi","xvii", "xviii", "ixx", "xx", "xxii", "xxiii",
+                        "xvi","xvii", "xviii", "xix", "xx", "xxi", "xxii", "xxiii",
                         "mada", "bmr", "ingagr", "annual","report","ny", 
                         "wwwrockefellerfoundationorgwhat", "appointed", "programs", 
                         "table", "instalments", "remaining", "fig", "hc", "Ih", "|h", 
