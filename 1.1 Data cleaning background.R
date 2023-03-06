@@ -248,7 +248,7 @@ data.clean.no.punct <- Corpus  %>%
          # text = str_replace_all(text, "independ ence", "independence"),
          # text = str_replace_all(text, "refer ence", "reference"),
          
-         text = str_replace_all(text, "([a-z]{2-11})\\s\\btive(s?)\\b", "\\1tive\\2"),
+         text = str_replace_all(text, "([a-z]{2,11})\\s\\btive(s?)\\b", "\\1tive\\2"),
          
          text = str_replace_all(text, "attenu ated", "attenuated"),
          text = str_replace_all(text, "oper ated", "operated"),
@@ -1014,7 +1014,7 @@ data.clean.punct <- Corpus  %>%
          # text = str_replace_all(text, "independ ence", "independence"),
          # text = str_replace_all(text, "refer ence", "reference"),
          
-         text = str_replace_all(text, "([a-z]{2-11})\\s\\btive(s?)\\b", "\\1tive\\2"),
+         text = str_replace_all(text, "([a-z]{2,11})\\s\\btive(s?)\\b", "\\1tive\\2"),
          
          text = str_replace_all(text, "attenu ated", "attenuated"),
          text = str_replace_all(text, "oper ated", "operated"),
