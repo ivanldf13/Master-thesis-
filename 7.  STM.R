@@ -43,7 +43,8 @@ searchk_5.20 <- searchK(documents = dfm,
                    K = 5:20,
                    N = 10,
                    prevalence = metadata,
-                   cores = 4)
+                   cores = 4,
+                   seed = 9)
 
 save(searchk_5.20, file = "searchk_5.20.Rda")
 
@@ -74,7 +75,8 @@ res10 <- stm(documents=dfm,
              prevalence = metadata,
              max.em.its = 150,
              # data=meta,
-             init.type = "Spectral")
+             init.type = "Spectral",
+             seed = 9)
 save(res10, file = "res10.Rda")
 
 res9 <- stm(documents=dfm,

@@ -35,6 +35,13 @@ tokenised.punct %>%
   group_by(Year) %>% 
   summarise(test = sum(test))
 
+tokenised.no.punct.nsw %>% 
+  count(words) %>% 
+  mutate(test = str_detect(words, "mem")) %>% 
+  summarise(test = sum(test))
+
+
+
 # Resilience ----
 freq.million %>% 
   filter(words %in% c("resilience")) %>% 
