@@ -33,12 +33,14 @@ metadata <- dc.np.final %>%
 dfm <- wordnumperyear %>% 
   cast_dfm(document = Year, term = words, value = n)
 
+# TODO whenever there are two words toguether, it separes it and it puts an NA in the 2nd one
 wordnumperyear %>% 
   separate(words, c("FrstWord", "SndWord"), sep = "\\s") %>% 
   filter(!is.na(SndWord))
 
 # To choose how many topics will be better ----
 # Exclusivity and semcoh (semantic coherence) should be as high as possible.
+# TODO results of the tibble below still change despite the seed
 searchk_5.20 <- searchK(documents = dfm,
                    K = 5:20,
                    N = 10,

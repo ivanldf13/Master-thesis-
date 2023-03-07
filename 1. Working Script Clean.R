@@ -858,7 +858,7 @@ table.per.period %>%
   geom_col()+
   facet_wrap(~period, scales = "free_y")+
   scale_y_reordered()+
-  labs(y="TOP 60")+
+  labs(y="TOP 50")+
   theme(legend.position = "none")
 
 # TF-IDF per year chosen ----
