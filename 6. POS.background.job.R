@@ -45,12 +45,18 @@ POS.Rockefeller <- dc.p.final %>%
   mutate(tag = future_map(text,ftest)) %>%
   unnest(tag) %>% 
   group_by(Year) %>% 
-  count(token, upos)
+  count(token, upos) %>% 
+  ungroup()
 
 save(POS.Rockefeller, file = "POS.Rockefeller.Rda")
 
+
+# POS without punctuation
+POS_no.punct <- POS.Rockefeller %>% 
+  filter(upos != "PUNCT")
 # POS in a given year
 
 # POS.Rockefeller %>% 
 #   group_by(Year) %>% 
 #   count(token, upos)
+

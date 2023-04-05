@@ -22,7 +22,7 @@ library(grid)
 library(vcd)
 library(janitor)
 library(rstatix)
-
+library(pvclust)
 # Loading Files ----
 
 load("POS.Rockefeller.Rda")
@@ -41,22 +41,21 @@ load("CA.NOUNS.Rda")
 POS.NOUNS <- POS.Rockefeller %>%
   filter(upos == "NOUN") %>% 
   select(-upos)
-
 save(POS.NOUNS, file = "POS.NOUNS.Rda")
 
 # Word clustering with just nouns ----
 ##CA per year 
-correspondance.matrix.POS <- 
+correspondance.matrix <- 
   POS.NOUNS %>%
   filter(n > 40) %>%
   spread(key = token, value = n) %>% 
   tibble::column_to_rownames("Year")
 
 # We recode the NAs in the correspondance.matrix.POS for 0s
-correspondance.matrix.POS[is.na(correspondance.matrix.POS)] <- 0
+correspondance.matrix[is.na(correspondance.matrix)] <- 0
 
 # Correspondance matrix image
-knitr::kable(correspondance.matrix.POS[1:5,1:5]) %>% 
+knitr::kable(correspondance.matrix[1:5,1:5]) %>% 
   save_kable(file = "CA_ppt.pdf")
 
 # Looking whether there is a problem with a row ----
@@ -72,8 +71,8 @@ CA.NOUNS$row$contrib[,2] %>%
   head(., n= 5)
 
 # Correspondance Analysis
-CA.NOUNS <- CA(correspondance.matrix.POS, ncp = 2)
-save(CA.NOUNS, file = "CA.NOUNS.Rda")
+CA <- CA(correspondance.matrix, ncp = 2)
+save(CA, file = "CA.Rda")
 
 # Getting the chi-square ----
 chi.test <- chisq.test(correspondance.matrix.POS) 
@@ -138,8 +137,9 @@ dev.off()
 # correspondance.matrix.POS$dim2 <- CA.NOUNS$svd$U[,2]
 
 # How many clusters would be optimal? ----
-fviz_nbclust(correspondance.matrix.POS, kmeans, method = "gap_stat")
-fviz_nbclust(correspondance.matrix.POS, hcut, method = "gap_stat")
+fviz_nbclust(correspondance.matrix, kmeans, method = "gap_stat") 
+fviz_nbclust(correspondance.matrix, hcut, method = "gap_stat")
+
 
 # Looking at cos2 of rows ----
 pdf("cos2.row.dim1&2.pdf")
@@ -244,7 +244,19 @@ head(res.desc[[2]]$col, 5)
 HCPC.NOUNS <- HCPC(CA.NOUNS, nb.clust = 5) 
 save(HCPC.NOUNS, file = "HCPC.NOUNS.Rda")    
 
-fviz_cluster(HCPC.NOUNS)
+hcpc.nouns <- HCPC(CA.NOUNS, 
+                   rect = TRUE, 
+                   rect_fill = TRUE,
+                   rect_border = "jco",
+                   labels_track_height = 0.8)
+
+fviz_cluster(HCPC.NOUNS, geom = "point", main = "Factor map")
+# fviz_dend(HCPC.NOUNS, show_labels = FALSE)
+
+pvclust(HCPC.NOUNS)
+pvclust(CA.NOUNS)
+pvclust(correspondance.matrix)
+# TODO PVclust function
 
 # Which variables describe better the clusters? ----
 head(HCPC.NOUNS$desc.var$`5`, 15)

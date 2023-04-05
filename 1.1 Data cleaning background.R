@@ -620,7 +620,7 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "influenceof", "influence of"),
          text = str_replace_all(text, "evidencethat", "evidence that"),
          text = str_replace_all(text, "residenceproperty", "residence property"),
-         text = str_replace_all(text, "agricul tural", "agricultural"),
+         text = str_replace_all(text, "\\bagricul tural", "agricultural"),
          text = str_replace_all(text, "\\bcul tural", "cultural"),
          text = str_replace_all(text, "culnj tural", "cultural"),
          text = str_replace_all(text, "struc tural", "structural"),
@@ -1386,7 +1386,7 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "influenceof", "influence of"),
          text = str_replace_all(text, "evidencethat", "evidence that"),
          text = str_replace_all(text, "residenceproperty", "residence property"),
-         text = str_replace_all(text, "agricul tural", "agricultural"),
+         text = str_replace_all(text, "\\bagricul tural", "agricultural"),
          text = str_replace_all(text, "\\bcul tural", "cultural"),
          text = str_replace_all(text, "culnj tural", "cultural"),
          text = str_replace_all(text, "struc tural", "structural"),
@@ -2358,6 +2358,7 @@ tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
 #          words = str_replace_all(words, "enharice", "enhace"))
 #     
 
+#  TODO tokenised.no.punct.nsw.Rda: un mot par ligen, mais dc.np. un text par ligne
   
 save(tokenised.punct, file = "tokenised.punct.Rda")
 save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
@@ -2380,8 +2381,15 @@ wordnumperyear <- tokenised.no.punct.nsw %>%
   group_by(Year) %>% 
   count(words, sort=TRUE) %>% 
   top_n(n = 500, n)
-
+# TODO why do we use tokenised.no.punct.nsw and not dc.np.final?
 save(wordnumperyear, file = "wordnumperyear.Rda")
+
+
+wordnumperyear.punct <- tokenised.punct %>% 
+  group_by(Year) %>% 
+  count(words, sort=TRUE) %>% 
+  top_n(n = 500, n)
+save(wordnumperyear.punct, file = "wordnumperyear.punct.Rda")
 
 # Creating a table per period for the whole of the corpus ----
 table.per.period <- tokenised.no.punct.nsw %>% 
@@ -2421,7 +2429,9 @@ freq.rep <- summary(corpus(dc.np.final)) %>%
 freq.rep %>% 
   ggplot(aes(Year, Tokens)) +
   geom_line() +
-  labs(y = "Number of words per year") +
+  labs(y = "Number of words per year",
+       title = "Figure X") +
   theme(legend.position = "none")
+  
 
 ggsave("number.of.words.per.year.pdf", units = "cm", width = 26, height = 14)

@@ -102,3 +102,56 @@ HCPC$call
 HCPC$data.clust %>% 
   filter(clust == 1) %>% 
   rownames()
+
+
+# Dendogram 
+fviz_dend(HCPC, show_labels = FALSE)
+# Individuals factor map
+fviz_cluster(HCPC, geom = "point", main = "Factor map")
+
+# why are not working
+# HCPC.NOUNS$desc.var$test.chi2
+# HCPC.NOUNS$desc.var$category
+# HCPC.NOUNS$desc.axes
+
+
+# Which are the most representative reports of the clusters? ----
+HCPC$desc.ind$para$`1`
+HCPC$desc.ind$dist$`1`
+
+HCPC$desc.ind$para$`2`
+HCPC$desc.ind$dist$`2`
+
+HCPC$desc.ind$para$`3`
+HCPC$desc.ind$dist$`3`
+
+HCPC$desc.ind$para$`4`
+HCPC$desc.ind$dist$`4`
+
+HCPC$desc.ind$para$`5`
+HCPC$desc.ind$dist$`5`
+
+## Which are the reports for the X clust? ----
+HCPC$data.clust %>% 
+  tibble::rownames_to_column("Year") %>% 
+  group_by(clust) %>% distinct(Year) %>% 
+  filter(clust == 4) %>% 
+  print(n= 51)
+
+
+# Checking the words over and under-represented ----
+clus1 <- HCPC$desc.var$`1`
+clus1[c(1:20, 169:189),]
+clus2 <- HCPC$desc.var$`2`
+clus2[c(1:20, 179:199),]
+clus3 <- HCPC$desc.var$`3`
+clus3[c(1:30, 179:199),]
+clus4 <- HCPC$desc.var$`4`
+clus4[c(1:20, 182:202),]
+clus5 <- HCPC$desc.var$`5`
+clus5[c(1:20, 147:167),]
+
+HCPC$desc.ind$para
+HCPC$desc.ind$dist
+HCPC$call
+

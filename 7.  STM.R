@@ -15,14 +15,16 @@ library(tidyr)
 #Loading useful files ----
 load("dc.np.final.Rda")
 load("wordnumperyear.Rda")
-
-load("res.Rda")
+load("POS.NOUNS.Rda")
+sload("res.Rda")
 
 # DFM ----
 ## Indicating the year of each document.
 metadata <- dc.np.final %>%
   select(Year) %>% 
   as.matrix()
+
+# TODO data just nouns
 
 # it goes well until we apply the as.matrix
   # filter(year != 2012) %>% quitar cuando esté el ocr 2012
@@ -33,26 +35,40 @@ metadata <- dc.np.final %>%
 dfm <- wordnumperyear %>% 
   cast_dfm(document = Year, term = words, value = n)
 
-# TODO whenever there are two words toguether, it separes it and it puts an NA in the 2nd one
+dfm_nouns <- POS.NOUNS %>% 
+  cast_dfm(document = Year, term = token, value = n)
+
+# TODO whenever there are two words together, it separates it and it puts an NA in the 2nd one
 wordnumperyear %>% 
   separate(words, c("FrstWord", "SndWord"), sep = "\\s") %>% 
   filter(!is.na(SndWord))
 
 # To choose how many topics will be better ----
-# Exclusivity and semcoh (semantic coherence) should be as high as possible.
+
 # TODO results of the tibble below still change despite the seed
+
 searchk_5.20 <- searchK(documents = dfm,
                    K = 5:20,
                    N = 10,
                    prevalence = metadata,
                    cores = 4,
-                   seed = 9)
+                   heldout.seed = 9)
 
 save(searchk_5.20, file = "searchk_5.20.Rda")
 
+
+searchk_5.20_nouns <- searchK(documents = dfm_nouns,
+                        K = 5:20,
+                        N = 10,
+                        prevalence = metadata,
+                        cores = 4,
+                        heldout.seed = 9)
+
+save(searchk_5.20_nouns, file = "searchk_5.20_nouns.Rda")
+
 ## Looking for the best K
-exclus <- scale(unlist(searchk_5.20$results$exclus))
-semcoh <- scale(unlist(searchk_5.20$results$semcoh))
+exclus <- scale(unlist(searchk_5.20_nouns$results$exclus))
+semcoh <- scale(unlist(searchk_5.20_nouns$results$semcoh))
 
 tibble(k = 5:20, exclus = exclus[,1], semcoh = semcoh[,1]) %>% 
   pivot_longer(c(exclus, semcoh), names_to = "scores", values_to = "values") %>% 
@@ -81,13 +97,13 @@ res10 <- stm(documents=dfm,
              seed = 9)
 save(res10, file = "res10.Rda")
 
-res9 <- stm(documents=dfm,
-             K=9,
+res13_nouns <- stm(documents=dfm_nouns,
+             K=13,
              prevalence = metadata,
              max.em.its = 150,
              # data=meta,
              init.type="Spectral")
-save(res9, file = "res9.Rda")
+save(res13_nouns, file = "res13_nouns.Rda")
 
 ## with b4.after ----
 # res10.b4 <- stm(documents=dfm,
@@ -102,15 +118,15 @@ save(res9, file = "res9.Rda")
 
 # what are the words belonging to each topic? ----
 labelTopics(res10, n = 20)
-topics.dfm.10 <- labelTopics(res10, n =20)
+topics.dfm.10 <- labelTopics(res10, n = 30)
 save(topics.dfm.10, file = "topics.dfm.10.Rda")
 
-labelTopics(res9, n = 15)
-topics.dfm.9 <- labelTopics(res9, n =15)
-save(topics.dfm.9, file = "topics.dfm.9.Rda")
+labelTopics(res13_nouns, n = 15)
+topics.dfm.13_nouns <- labelTopics(res13_nouns, n = 15)
+save(topics.dfm.13_nouns, file = "topics.dfm.13_nouns.Rda")
 
 labelTopics(res20, n = 15)
-topics.dfm.20 <- labelTopics(res20, n =15)
+topics.dfm.20 <- labelTopics(res20, n = 15)
 save(topics.dfm.20, file = "topics.dfm.20.Rda")
 
 topics.dfm.10$frex
@@ -125,7 +141,7 @@ plotQuote(thoughts11,    width    =    30,    main    =   "Topic 10")
 
 # Proportion des topics en graphique ----
 pdf("plot.correlation.topics.pdf")
-plot(res11, type = "summary", topic.names = c("Topic 1* natural sciences research:", 
+plot(res10, type = "summary", topic.names = c("Topic 1* natural sciences research:", 
                                             "Topic 2* what are we, how we collaborate:",
                                             "Topic 3 African challenges:", 
                                             "Topic 4 Hygiene education:",
@@ -144,21 +160,21 @@ thetaPosterior(res10)
 cloud(res10, topic=7, random.order = FALSE,max.words = 25, rot.per = 0)
 
 # Régression, pour voir si les années sont correlées avec les topics ----
-reg <- estimateEffect(1:10 ~I(Year^2) + Year, res10,
+reg13_nouns <- estimateEffect(1:13 ~I(Year^2) + Year, res13_nouns,
                       metadata = as.data.frame(metadata),
                       uncertainty = "Global")
-save(reg, file = "reg.Rda")
+save(reg13_nouns, file = "reg13_nouns.Rda")
 
-reg11 <- estimateEffect(1:11 ~I(Year^2) + Year, res11,
+reg10 <- estimateEffect(1:10 ~I(Year^2) + Year, res10,
                       metadata = as.data.frame(metadata),
                       uncertainty = "Global")
-save(reg11, file = "reg11.Rda")
+save(reg10, file = "reg10.Rda")
 
 # Résultat de la régression pour le topic 1
-summary(reg, topics = c(1:10))
+summary(reg10, topics = c(1:10))
 
 # Résultat de la régression pour tous les topics 
-summary(reg11, topics = 1:11)
+summary(reg13_nouns, topics = 1:13)
 
 
 # Classement sur un variable métrique ----
@@ -167,7 +183,7 @@ plot(reg, covariate="year", topics = c(1:3),
      xlab = "years")
 
 # Même chose avec plusieurs topics
-plot(reg, covariate = "Year", topics = c(1, 2, 5, 9),
+plot(reg10, covariate = "Year", topics = c(1, 2, 5, 9),
      method = "continuous",
      xlab = "Years")
 
@@ -202,7 +218,7 @@ plot(mod.out.corr, c(1:8), vlabels = c("University", "Health", "army", "school",
 beta <- tidy(res10, matrix = "beta")
 
 beta %>% 
-  filter(topic %in% c(1, 2, 5, 7)) %>% 
+  filter(topic %in% c(1, 2, 5, 7,9, 10)) %>% 
   group_by(topic) %>% 
   slice_max(beta, n = 10)
 # maybe create an object from this
@@ -222,7 +238,7 @@ beta %>%
 gamma <- tidy(res10, matrix = "gamma")
 
 gamma %>% 
-  filter(topic %in% c(1, 2, 5, 7)) %>% 
+  filter(topic %in% c(1, 2, 5, 7, 9, 10)) %>% 
   ggplot(aes(x= document, y = gamma, linetype = factor(topic)))+
   geom_line()
 
@@ -242,14 +258,17 @@ gamma %>%
 
 # Graph for the statistically significant topics ----
 gamma %>% 
-  filter(topic %in% c(1, 2, 5, 7)) %>%
+  filter(topic %in% c(1, 2, 5, 7, 9, 10)) %>%
   ggplot(aes(document, gamma, fill = factor(topic)))+
   geom_col()+
-  scale_fill_manual(values = c("#387fc7","#e63cfe", "#af338e", "#97bea1", "#bfbb8a"),
+  scale_fill_manual(values = c("#387fc7","#e63cfe", "#af338e", "#97bea1", 
+                                        "#bfbb8a", "#e7b973"),
                     labels = c("1.Natural Sciences", "2.Ways to collaborate, who we are", 
                                "5.XXI century challenges", 
                                "10.Hygiene, psychological wellbeing"),
-                    name = "Topics")
+                    name = "Topics")+
+  ggtitle("Topics and its correlation with time metadata")
+# TODO what would be another way to add a title?
 ggsave("gamma.stat.significant.pdf", units = "cm", width = 26, height = 14)
 
                                # , "#e7b973", ))"#6fc0b8"
