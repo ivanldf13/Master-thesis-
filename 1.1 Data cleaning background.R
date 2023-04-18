@@ -793,7 +793,9 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "towardthe", "toward the"),
          text = str_replace_all(text, "fiscalequitynew", "fiscal equity new"),
          text = str_replace_all(text, "annouriced", "announced"),
-         text = str_replace_all(text, "\\bmem\\sber(s)?", "member\\1"))
+         text = str_replace_all(text, "\\bmem\\sber(s)?", "member\\1"),
+         text = str_replace_all(text, "resuits", "results"),
+         text = str_replace_all(text, "centrol", "central"))
 
 
 ##Cleaning and creating the data with punctuation ---- 
@@ -1559,7 +1561,9 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "towardthe", "toward the"),
          text = str_replace_all(text, "fiscalequitynew", "fiscal equity new"),
          text = str_replace_all(text, "annouriced", "announced"),
-         text = str_replace_all(text, "\\bmem\\sber(s)?", "member\\1"))
+         text = str_replace_all(text, "\\bmem\\sber(s)?", "member\\1"),
+         text = str_replace_all(text, "resuits", "results"),
+         text = str_replace_all(text, "centrol", "central"))
 
          
          

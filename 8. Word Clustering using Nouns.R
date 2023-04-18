@@ -22,7 +22,7 @@ library(grid)
 library(vcd)
 library(janitor)
 library(rstatix)
-library(pvclust)
+
 # Loading Files ----
 
 load("POS.Rockefeller.Rda")
@@ -35,49 +35,56 @@ load("CA.NOUNS.Rda")
 # retirer les loads de POS.Nouns et CA.NOUNS
 # View the most numerous "NOUNS" in the file ----
 # POS.Rockefeller %>%
-  # filter(upos == "NOUN") %>%
+# filter(upos == "NOUN") %>%
 #   count(token, sort=TRUE) %>%  print(n=25)
 
 POS.NOUNS <- POS.Rockefeller %>%
   filter(upos == "NOUN") %>% 
   select(-upos)
+
 save(POS.NOUNS, file = "POS.NOUNS.Rda")
 
 # Word clustering with just nouns ----
 ##CA per year 
-correspondance.matrix <- 
+correspondance.matrix.POS <- 
   POS.NOUNS %>%
   filter(n > 40) %>%
   spread(key = token, value = n) %>% 
   tibble::column_to_rownames("Year")
 
-# We recode the NAs in the correspondance.matrix.POS for 0s
-correspondance.matrix[is.na(correspondance.matrix)] <- 0
-
-# Correspondance matrix image
-knitr::kable(correspondance.matrix[1:5,1:5]) %>% 
+knitr::kable(correspondance.matrix.POS[1:5,1:5]) %>% 
   save_kable(file = "CA_ppt.pdf")
 
 # Looking whether there is a problem with a row ----
 POS.NOUNS %>% 
-  filter(Year == 2008) %>% 
+  filter(Year == 2009) %>% 
   arrange(desc(n))
-
-# Getting the names of the rows to check which AR is missing
-rownames(correspondance.matrix.POS)
 
 CA.NOUNS$row$contrib[,2] %>% 
   sort(., decreasing = TRUE) %>% 
   head(., n= 5)
 
-# Correspondance Analysis
-CA <- CA(correspondance.matrix, ncp = 2)
-save(CA, file = "CA.Rda")
+correspondance.matrix.POS[is.na(correspondance.matrix.POS)] <- 0
+nrow(correspondance.matrix.POS)
+
+CA.NOUNS <- CA(correspondance.matrix.POS, ncp = 2)
+save(CA.NOUNS, file = "CA.NOUNS.Rda")
+
+# Comparing the number of words of early and late reports ----
+freq.rep <- summary(corpus(dc.np.final)) %>% 
+  select(Text, Tokens, Year)
+
+freq.rep %>% 
+  ggplot(aes(Year, Tokens)) +
+  geom_line() +
+  labs(y = "Number of words per year") +
+  theme(legend.position = "none")
+
+ggsave("number.of.words.per.year.pdf", units = "cm", width = 26, height = 14)
+
 
 # Getting the chi-square ----
-chi.test <- chisq.test(correspondance.matrix.POS) 
-chi.test
-dim(correspondance.matrix.POS)
+chisq.test(correspondance.matrix.POS)
 
 assocstats(correspondance.matrix.POS)
 
@@ -91,7 +98,7 @@ pdf("eigen.values.screeplot.pdf")
 fviz_eig(CA.NOUNS, addlabels = TRUE, ylim = c(0,50))
 dev.off()
 
-# Words correlated with both dimensions ----
+# Correlation matrix ----
 CA.NOUNS$col$cos2[ ,-3:-5] %>%
   .[order(.[,2], decreasing=TRUE),] %>% 
   .[.[,1]>=0.3|.[,2]>=0.3,  ] %>% 
@@ -137,9 +144,8 @@ dev.off()
 # correspondance.matrix.POS$dim2 <- CA.NOUNS$svd$U[,2]
 
 # How many clusters would be optimal? ----
-fviz_nbclust(correspondance.matrix, kmeans, method = "gap_stat") 
-fviz_nbclust(correspondance.matrix, hcut, method = "gap_stat")
-
+fviz_nbclust(correspondance.matrix.POS, kmeans, method = "gap_stat")
+fviz_nbclust(correspondance.matrix.POS, hcut, method = "gap_stat")
 
 # Looking at cos2 of rows ----
 pdf("cos2.row.dim1&2.pdf")
@@ -206,27 +212,36 @@ fviz_ca_col(CA.NOUNS, select.col = list(cos2 = 0.7))
 fviz_ca_biplot(CA.NOUNS, select.row = list(cos2 = 0.29),
                select.col = list(cos2 = 0.6)) +
   theme_minimal()
-  
-## Looking at the top contributors columns/rows ----
-fviz_ca_biplot(CA.NOUNS, select.row = list(contrib = 10),
-               select.col = list(contrib = 20), repel = TRUE) +
-  theme_minimal()
 
+## Looking at the top contributors columns/rows ----
+fviz_ca_biplot(CA.NOUNS, select.row = list(contrib = 20),
+               select.col = list(contrib = 20), repel = TRUE, title = "Figure X: Top 20 contributors") +
+  theme_minimal()
+ggsave("Top 20 Contributors.png", units = "cm", width = 26, height = 14)
 
 ### For rows ----
 fviz_ca_row(CA.NOUNS, select.row = list(contrib = 10))+
   theme_minimal()
 
 ### For columns ----
-fviz_ca_col(CA.NOUNS, select.col = list(contrib = 13), title = "Top Row Contributors")+
-  theme_minimal() 
+fviz_ca_col(CA.NOUNS, select.col = list(contrib = 10))+
+  theme_minimal()
 
 # Contribution Biplotting ----
 fviz_ca_biplot(CA.NOUNS, map="colgreen", arrow = c(FALSE, TRUE),
                repel = TRUE, top = 15)
 
 fviz_ca_col(CA.NOUNS, map="colgreen", arrow = c(TRUE),
-               repel = TRUE, top = 15)
+            repel = TRUE, top = 15)
+
+# TODO does not work below
+Biplot does not allow us to interpret the distance between 
+column and row point. to do so we need to do an asymetric plot.CA(
+  practical guide to 71
+)
+fviz_ca_biplot(CA.NOUNS,
+               map = "rowprincipal", arrow = c(TRUE, TRUE),
+               repel = TRUE)
 
 # Description of Dimensions ----
 res.desc <- dimdesc(CA.NOUNS, axes = c(1:2))
@@ -244,19 +259,8 @@ head(res.desc[[2]]$col, 5)
 HCPC.NOUNS <- HCPC(CA.NOUNS, nb.clust = 5) 
 save(HCPC.NOUNS, file = "HCPC.NOUNS.Rda")    
 
-hcpc.nouns <- HCPC(CA.NOUNS, 
-                   rect = TRUE, 
-                   rect_fill = TRUE,
-                   rect_border = "jco",
-                   labels_track_height = 0.8)
+fviz_cluster(HCPC.NOUNS, show.clust.cent = TRUE)
 
-fviz_cluster(HCPC.NOUNS, geom = "point", main = "Factor map")
-# fviz_dend(HCPC.NOUNS, show_labels = FALSE)
-
-pvclust(HCPC.NOUNS)
-pvclust(CA.NOUNS)
-pvclust(correspondance.matrix)
-# TODO PVclust function
 
 # Which variables describe better the clusters? ----
 head(HCPC.NOUNS$desc.var$`5`, 15)
@@ -266,14 +270,16 @@ clusters <- HCPC.NOUNS$data.clust %>%
   select(clust) %>% 
   tibble::rownames_to_column("Year")
 save(clusters, file = "clusters.HCPC.Rda")
+
 clusters %>% 
   filter(str_detect(Year, "2009"))
+
 merge(wordnumperyear, clusters) %>% 
   group_by(clust, words) %>% 
   summarize(n = sum(n)) %>% 
   arrange(desc(n)) %>% 
   bind_tf_idf(words, clust, n) %>% 
-  filter(clust %in% 1:3) %>% 
+  filter(clust %in% 1:5) %>% 
   slice_max(tf_idf , n = 40) %>% 
   ggplot(aes(tf_idf, reorder_within(words, tf_idf, clust))) +
   geom_col() +
@@ -321,15 +327,15 @@ HCPC.NOUNS$data.clust %>%
 
 # Checking the words over and under-represented ----
 clus1 <- HCPC.NOUNS$desc.var$`1`
-clus1[c(1:20, 169:189),]
+clus1[c(1:30, 159:189),]
 clus2 <- HCPC.NOUNS$desc.var$`2`
-clus2[c(1:20, 359:379),]
+clus2[c(1:30, 349:379),]
 clus3 <- HCPC.NOUNS$desc.var$`3`
-clus3[c(1:10, 368:378),]
+clus3[c(1:30, 348:378),]
 clus4 <- HCPC.NOUNS$desc.var$`4`
-clus4[c(1:20, 360:380),]
+clus4[c(1:30, 350:380),]
 clus5 <- HCPC.NOUNS$desc.var$`5`
-clus5[c(1:20, 359:379),]
+clus5[c(1:30, 349:379),]
 
 HCPC.NOUNS$desc.ind$para
 HCPC.NOUNS$desc.ind$dist

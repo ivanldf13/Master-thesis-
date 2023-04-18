@@ -91,6 +91,10 @@ HCPC$desc.var$`4` %>%
   as.data.frame() %>% 
   filter(`Intern freq` > 0)
 
+# FIXME It does not work
+HCPC$test.chi2
+HCPC$category$`2`
+HCPC$desc.axes$quanti
 
 # Description des cluster par les dimensions
 HCPC$desc.axes

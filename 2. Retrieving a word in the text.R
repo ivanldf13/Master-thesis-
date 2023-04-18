@@ -7,7 +7,7 @@ load("dc.p.final.Rda")
 corpus <- corpus(dc.np.final, docid_field = "Year")
 corpus.tokenised <- tokens(corpus)
 options(max.print = 5000)
-kwic(corpus.tokenised, pattern = "usa")
+kwic(corpus.tokenised, pattern = "centrol")
 
 
 # , valuetype = "regex"

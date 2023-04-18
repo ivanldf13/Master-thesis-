@@ -67,8 +67,8 @@ searchk_5.20_nouns <- searchK(documents = dfm_nouns,
 save(searchk_5.20_nouns, file = "searchk_5.20_nouns.Rda")
 
 ## Looking for the best K
-exclus <- scale(unlist(searchk_5.20_nouns$results$exclus))
-semcoh <- scale(unlist(searchk_5.20_nouns$results$semcoh))
+exclus <- scale(unlist(searchk_5.20$results$exclus))
+semcoh <- scale(unlist(searchk_5.20$results$semcoh))
 
 tibble(k = 5:20, exclus = exclus[,1], semcoh = semcoh[,1]) %>% 
   pivot_longer(c(exclus, semcoh), names_to = "scores", values_to = "values") %>% 
@@ -183,7 +183,7 @@ plot(reg, covariate="year", topics = c(1:3),
      xlab = "years")
 
 # Même chose avec plusieurs topics
-plot(reg10, covariate = "Year", topics = c(1, 2, 5, 9),
+plot(reg10, covariate = "Year", topics = c(1, 2, 5, 7, 9),
      method = "continuous",
      xlab = "Years")
 
@@ -238,7 +238,7 @@ beta %>%
 gamma <- tidy(res10, matrix = "gamma")
 
 gamma %>% 
-  filter(topic %in% c(1, 2, 5, 7, 9, 10)) %>% 
+  filter(topic %in% c(1, 2, 5, 7, 9)) %>% 
   ggplot(aes(x= document, y = gamma, linetype = factor(topic)))+
   geom_line()
 
@@ -258,14 +258,15 @@ gamma %>%
 
 # Graph for the statistically significant topics ----
 gamma %>% 
-  filter(topic %in% c(1, 2, 5, 7, 9, 10)) %>%
+  filter(topic %in% c(1, 2, 5, 7, 9)) %>%
   ggplot(aes(document, gamma, fill = factor(topic)))+
   geom_col()+
   scale_fill_manual(values = c("#387fc7","#e63cfe", "#af338e", "#97bea1", 
                                         "#bfbb8a", "#e7b973"),
                     labels = c("1.Natural Sciences", "2.Ways to collaborate, who we are", 
                                "5.XXI century challenges", 
-                               "10.Hygiene, psychological wellbeing"),
+                               "10.Hygiene, psychological wellbeing",
+                               "9"),
                     name = "Topics")+
   ggtitle("Topics and its correlation with time metadata")
 # TODO what would be another way to add a title?

@@ -786,7 +786,10 @@ table.per.period %>%
   facet_wrap(~period, scales = "free_y")+
   scale_y_reordered()+
   labs(y="TOP 20")+
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  ggtitle("Figure X: Top 20 words for the whole of the corpus")
+
+ggsave("graph-top20.png", units = "cm", width = 26, height = 30)
 
 ## Creating the graph per period choosing it ----
 table.per.period %>% 
