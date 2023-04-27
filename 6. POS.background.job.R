@@ -52,11 +52,20 @@ save(POS.Rockefeller, file = "POS.Rockefeller.Rda")
 
 
 # POS without punctuation
-POS_no.punct <- POS.Rockefeller %>% 
-  filter(upos != "PUNCT")
-# POS in a given year
+POS.Rockefeller <- POS.Rockefeller %>% 
+  filter(upos != "PUNCT",
+         !token %in% c("mr", "tures", "c.", "co.", "u", "ry", "p.", "p.", "univ.",
+                       "rf", "v.", "fig", "r.f", "m.s.", "t", "s.", "\\-a", "st", 
+                       "ss", "ls", "md", "m.d.", "inc.", "par", "pp.", "b."))
+# TODO I: put here the list of the bankspeak doc
 
-# POS.Rockefeller %>% 
-#   group_by(Year) %>% 
-#   count(token, upos)
 
+# Selecting only the nouns
+POS.NOUNS <- POS.Rockefeller %>%
+  filter(upos == "NOUN") %>% 
+  select(-upos) %>% 
+  group_by(Year) %>% 
+  top_n(n = 500, n) %>% 
+  ungroup()
+
+save(POS.NOUNS, file = "POS.NOUNS.Rda")

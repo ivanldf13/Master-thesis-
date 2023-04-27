@@ -739,7 +739,7 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "annualreport", "annual-report"),
          text = str_replace_all(text, "\\bartis ans", "artisans"),
          text = str_replace_all(text, "\\bartis anal", "artisanal"),
-         text = str_replace_all(text, "\\bagricul", "agriculture"),
+         # text = str_replace_all(text, "\\bagricul", "agriculture"),
          text = str_replace_all(text, "\\bagron omy", "agronomy"),
          text = str_replace_all(text, "\\bagron", "agronomy"),
          text = str_replace_all(text, "\\brresearch", "research"),
@@ -1388,7 +1388,7 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "influenceof", "influence of"),
          text = str_replace_all(text, "evidencethat", "evidence that"),
          text = str_replace_all(text, "residenceproperty", "residence property"),
-         text = str_replace_all(text, "\\bagricul tural", "agricultural"),
+         # text = str_replace_all(text, "\\bagricul tural", "agricultural"),
          text = str_replace_all(text, "\\bcul tural", "cultural"),
          text = str_replace_all(text, "culnj tural", "cultural"),
          text = str_replace_all(text, "struc tural", "structural"),
@@ -1626,6 +1626,7 @@ tokenised.no.punct <- data.clean.no.punct %>%
                         "mrs", "w", "ca", "http", "ns", "cd", "pp", "investiga",  
                         "shall","ok", "forl", "backi", "fas", "fss", "appro", 
                         "foundationorg", "smns")))
+# TODO include at this level what we have cleaned with the POS.background
 save(tokenised.no.punct, file = "tokenised.no.punct.Rda")
 
 # 2ndB, we do the tokenisation of the corpus WITH PUNCTUATION and the 2nd layer ----
@@ -1998,11 +1999,13 @@ tokenised.punct <- tokenised.punct %>%
          words = str_replace_all(words, "(arice)(.*)", "ance\\2"),
          words = str_replace_all(words, "(erice)(.*)", "ence\\2"),
          words = str_replace_all(words, "(irice)(.*)", "ince\\2"),
-         words = str_replace_all(words, "(nomi)ric(.*)", "\\1n\\2")) %>% 
+         words = str_replace_all(words, "(irice)(.*)", "ince\\2"),
+         words = str_replace_all(words, "schoololarships", "scholarships"),
+         words = str_replace_all(words, "artistinresidence", "artist in residence")) %>% 
   filter(! (words %in% c("tory", "tional", "tural", "ture", "cal", "medi", "na", 
                          "cul","©", "v", "f", "r", "p", "e", "t", "l", "m", "n", 
                          "b", "m.s", "na", "fe", "ab", "db", "appbopbu", 
-                         "apphopbia", "tionb", "tlona", "$")))
+                         "apphopbia", "tionb", "tlona", "$", "mem")))
 
 tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
   mutate(words = str_replace_all(words, "approappropriation", "appropriation"),
@@ -2306,11 +2309,13 @@ tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
          words = str_replace_all(words, "(arice)(.*)", "ance\\2"),
          words = str_replace_all(words, "(erice)(.*)", "ence\\2"),
          words = str_replace_all(words, "(irice)(.*)", "ince\\2"),
-         words = str_replace_all(words, "(nomi)ric(.*)", "\\1n\\2")) %>% 
+         words = str_replace_all(words, "(nomi)ric(.*)", "\\1n\\2"),
+         words = str_replace_all(words, "schoololarships", "scholarships"),
+         words = str_replace_all(words, "artistinresidence", "artist in residence")) %>% 
   filter(! (words %in% c("tory", "tional", "tural", "ture", "cal", "medi", "na", 
                          "cul","©", "v", "f", "r", "p", "e", "t", "l", "m", "n", 
                          "b", "m.s", "na", "fe", "ab", "db", "appbopbu", 
-                         "apphopbia", "tionb", "tlona", "$")))
+                         "apphopbia", "tionb", "tlona", "$", "mem")))
 
 
 ## Just in case cleaning ----
@@ -2384,7 +2389,20 @@ save(dc.p.final, file= "dc.p.final.Rda")
 wordnumperyear <- tokenised.no.punct.nsw %>% 
   group_by(Year) %>% 
   count(words, sort=TRUE) %>% 
-  top_n(n = 500, n)
+  top_n(n = 500, n) %>% 
+  ungroup()
+
+# To separate two words that have not been separated before
+two_words <- wordnumperyear %>% 
+  separate(words, c("FrstWord", "SndWord"), sep = "\\s") %>% 
+  filter(!is.na(SndWord)) %>% 
+  gather("order", "words", FrstWord, SndWord) %>% 
+  select(Year, words, n)
+
+wordnumperyear <- two_words %>% 
+  bind_rows(wordnumperyear) %>% 
+  filter(!str_detect(words, "\\s|\\-"))
+
 # TODO why do we use tokenised.no.punct.nsw and not dc.np.final?
 save(wordnumperyear, file = "wordnumperyear.Rda")
 
