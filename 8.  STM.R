@@ -4,7 +4,6 @@ library(dplyr)
 library(stm)
 library(stringr)
 library(broom)
-library(tidytext)
 library(ggplot2)
 library(wordcloud)
 library(corrplot)
@@ -31,11 +30,7 @@ dfm <- wordnumperyear %>%
 dfm_nouns <- POS.NOUNS %>% 
   cast_dfm(document = Year, term = token, value = n)
 
-
 # To choose how many topics will be better ----
-
-# TODO results of the tibble below still change despite the seed
-
 searchk_5.20 <- searchK(documents = dfm,
                    K = 5:20,
                    N = 10,
@@ -44,7 +39,6 @@ searchk_5.20 <- searchK(documents = dfm,
                    heldout.seed = 9)
 
 save(searchk_5.20, file = "searchk_5.20.Rda")
-
 
 searchk_5.20_nouns <- searchK(documents = dfm_nouns,
                         K = 5:20,
@@ -55,41 +49,46 @@ searchk_5.20_nouns <- searchK(documents = dfm_nouns,
 
 save(searchk_5.20_nouns, file = "searchk_5.20_nouns.Rda")
 
-## Looking for the best K
+# TODO results of the tibble below still change despite the seed
+
+## Looking for the best K ----
 exclus <- scale(unlist(searchk_5.20$results$exclus))
 semcoh <- scale(unlist(searchk_5.20$results$semcoh))
 
-# number of topics suggested
+
+# TODO V where are the exclus and semcoh values standarised with the scale, right?
+## number of topics suggested 
 tibble(k = 5:20, exclus = exclus[,1], semcoh = semcoh[,1]) %>% 
   pivot_longer(c(exclus, semcoh), names_to = "scores", values_to = "values") %>% 
   ggplot(aes(k, values, linetype = scores)) +
   geom_line() +
   scale_x_continuous(breaks = 5:20) +
-  labs(x="number of suggested topics")
+  scale_linetype_manual(values=c("solid", "dashed"), 
+                        name="Score Type", 
+                        labels=c("Exclusivity", "Semantic Coherence")) +
+  labs(x = "Number of suggested topics", y = "Standarised values") +
+  ggtitle("Figure X: Number of topic suggested by exclusivity and semantic coherence")
 ggsave("number.of.topics.stm.pdf", units = "cm", width = 26, height = 14)
 
-# number of topics suggested only nouns
+
+## Looking for the best K only nouns ----
 exclus_nouns <- scale(unlist(searchk_5.20_nouns$results$exclus))
 semcoh_nouns <- scale(unlist(searchk_5.20_nouns$results$semcoh)) 
-
+# number of topics suggested only nouns 
 tibble(k = 5:20, exclus_nouns = exclus_nouns[,1], semcoh_nouns = semcoh_nouns[,1]) %>% 
   pivot_longer(c(exclus_nouns, semcoh_nouns), names_to = "scores", values_to = "values") %>% 
   ggplot(aes(k, values, linetype = scores)) +
   geom_line() +
   scale_x_continuous(breaks = 5:20) +
-  labs(x="number of suggested topics")
+  scale_linetype_manual(values=c("solid", "dashed"), 
+                        name="Score Type", 
+                        labels=c("Exclusivity", "Semantic coherence")) +
+  labs(x = "Number of suggested topics", y = "Standarised values") +
+  ggtitle("Figure X: Number of topic suggested by Exclusivity and Semantic coherence")
 ggsave("number.of.topics.stm.nouns.pdf", units = "cm", width = 26, height = 14)
 
-# does the topic makes semantic sense?
-res20 <- stm(documents=dfm,
-           K=20,
-           prevalence = metadata,
-           max.em.its = 150,
-           # data=meta,
-           init.type = "Spectral",
-           content = ~ b4.after)
-save(res20, file = "res20.Rda")
-
+# Estimation of the STM
+## 10 topics, all words ----
 res10 <- stm(documents=dfm,
              K=10,
              prevalence = metadata,
@@ -99,74 +98,103 @@ res10 <- stm(documents=dfm,
              seed = 9)
 save(res10, file = "res10.Rda")
 
+## 10 topics, only nouns ----
 res10_nouns <- stm(documents=dfm_nouns,
-             K=10,
-             prevalence = metadata,
-             max.em.its = 150,
-             # data=meta,
-             init.type="Spectral")
+                   K=10,
+                   prevalence = metadata,
+                   max.em.its = 150,
+                   # data=meta,
+                   init.type="Spectral")
 save(res10_nouns, file = "res10_nouns.Rda")
 
-## with b4.after ----
-# res10.b4 <- stm(documents=dfm,
-#              K=10,
-#              data = metadata,
-#              max.em.its = 150,
-#              prevalence = ~ year + b4.after,
-#              # data=meta,
-#              init.type="Spectral",
-#              content = ~ b4.after)
-# save(res10.b4, file = "res10.b4.Rda")
+### 20 topics, all words ----
+# res20 <- stm(documents=dfm,
+#            K=20,
+#            prevalence = metadata,
+#            max.em.its = 150,
+#            # data=meta,
+#            init.type = "Spectral",
+#            content = ~ b4.after)
+# save(res20, file = "res20.Rda")
 
-# what are the words belonging to each topic? ----
+
+
+# What are the words belonging to each topic? ----
 labelTopics(res10, n = 20)
 topics.dfm.10 <- labelTopics(res10, n = 30)
 save(topics.dfm.10, file = "topics.dfm.10.Rda")
 
-labelTopics(res10_nouns, n = 20)
-topics.dfm.10_nouns <- labelTopics(res10_nouns, n = 20)
+
+## What are the words belonging to each topic - only nouns ----
+labelTopics(res10_nouns, n = 20, frexweight = 0.25)
+topics.dfm.10_nouns <- labelTopics(res10_nouns, n = 20, frexweight = 0.25, 
+                                   topics = c(1, 3, 4, 5, 6, 8, 9, 10))
+
 save(topics.dfm.10_nouns, file = "topics.dfm.10_nouns.Rda")
 
-labelTopics(res20, n = 15)
-topics.dfm.20 <- labelTopics(res20, n = 15)
-save(topics.dfm.20, file = "topics.dfm.20.Rda")
+### Table ----
+df <- as.data.frame(topics.dfm.10_nouns$frex)
 
-topics.dfm.10$frex
-topics.dfm.9$frex
+df <- df[1:10, 1:10]
+kable(df, format = "markdown", align = "lcc", caption = "Top 10 FREX Words for Topic 1")
+png("prueba.png")
 
-# Getting the most salient reports for a given topic ----
-## All words
-thoughts10 <- findThoughts(res10, topics = 10, texts = dc.np.final$Year, n = 5)$docs[[1]]
-plotQuote(thoughts10,    width    =    30,    main    =   "Topic 10")
-## Only nouns
-thoughts10_nouns <- findThoughts(res10_nouns, topics = 1, texts = dc.np.final$Year, n = 5)$docs[[1]]
-plotQuote(thoughts10_nouns,    width    =    30,    main    =   "Topic 1")
-
-# Proportion des topics en graphique ----
-pdf("plot.correlation.topics.pdf")
-plot(res10, type = "summary", topic.names = c("Topic 1* natural sciences research:", 
-                                            "Topic 2* what are we, how we collaborate:",
-                                            "Topic 3 African challenges:", 
-                                            "Topic 4 Hygiene education:",
-                                            "Topic 5* 21st century challenges:", 
-                                            "Topic 6 Agricultural education & cultural promotion:", 
-                                            "Topic 7 *", 
-                                            "Topic 8 Demographic challenges:", 
-                                            "Topic 9 Medical education, early 20th century +:", 
-                                            "Topic 10 Hygiene, psychological wellbeing:",
-                                            "T11"))
+knitr::include_graphics(tmp_file)
 dev.off()
 
 
-# Graph des mots par topics ----
+# FIXME V no funsiona ;(
+
+topics.dfm.10_nouns$frex
+topics.dfm.9$frex
+topics.dfm.10_nouns
+
+# Getting the most salient reports for a given topic ----
+## All words
+thoughts10 <- findThoughts(res10, topics = 1, texts = dc.np.final$Year, n = 5)$docs[[1]]
+plotQuote(thoughts10,    width    =    30,    main    =   "Topic 10")
+## Only nouns
+thoughts10_nouns <- findThoughts(res10_nouns, topics = 4, texts = dc.np.final$Year, n = 10)$docs[[1]]
+plotQuote(thoughts10_nouns,    width    =    30,    main    =   "Topic 4")
+
+
+toughts10_nouns <- findThoughts(res10_nouns)
+topic1_docs <- which(toughts10_nouns$theta[, 1] == max(toughts10_nouns$theta[, 1]))
+
+
+# Graph of the topics' proportion, only nouns ----
+png("plot.expected.topic.proportions.png", width = 1000, height = 600)
+plot(res10_nouns, type = "summary", topic.names = c("T1*:", 
+                                                    "T2:",
+                                                    "T3*: 20th century challenges - African, cities and transport development:", 
+                                                    "T4*: War relief, Insect-borne diseases:", 
+                                                    "T5*: Population issues:",
+                                                    "T6*: Insect-borne diseases & Public health education:",
+                                                    "T7:",
+                                                    "T8*: 20th century challenges - Climate change:",
+                                                    "T9*: Agronomy:", 
+                                                    "T10*: Expansion of interests:"),
+     xlab = "Expected Topic Proportions.\n Topics statistically correlated with time are shown with a star (*)",
+     labeltype = "frex", 
+     n = 7,
+     main = "Figure X: Expected topic proportions")
+
+dev.off()
+
+
+## Word graph per topic ----
 cloud(res10, topic=7, random.order = FALSE,max.words = 25, rot.per = 0)
 
-# Régression, pour voir si les années sont correlées avec les topics ----
+
+# Regression, to see if the years are correlated with the topics ----
 ## Only nouns ----
 reg10_nouns <- estimateEffect(1:10 ~I(Year^2) + Year, res10_nouns,
                       metadata = as.data.frame(metadata),
                       uncertainty = "Global")
 save(reg10_nouns, file = "reg10_nouns.Rda")
+
+### Regression result for all topics 
+summary(reg10_nouns, topics = 1:10)
 
 ## All words ----
 reg10 <- estimateEffect(1:10 ~I(Year^2) + Year, res10,
@@ -177,16 +205,12 @@ save(reg10, file = "reg10.Rda")
 # Résultat de la régression pour le topic 1
 summary(reg10, topics = c(1:10))
 
-# Résultat de la régression pour tous les topics 
-summary(reg10_nouns, topics = 1:10)
-
-
-# Classement sur un variable métrique ----
-plot(reg, covariate="year", topics = c(1:3),
+# Classification on a metric variable ----
+plot(reg10, covariate="Year", topics = ,
      method = "continuous",
      xlab = "years")
 
-# Même chose avec plusieurs topics
+## Same thing with several topics ----
 plot(reg10, covariate = "Year", topics = c(1, 2, 5, 7, 9),
      method = "continuous",
      xlab = "Years")
@@ -195,37 +219,50 @@ plot(reg10_nouns, covariate = "Year", topics = c(1, 3, 4, 5, 6, 8, 9, 10),
      method = "continuous",
      xlab = "years")
 
-# Graphique de corrélation ----
+
+# Correlation graph ----
 mod.out.corr <- topicCorr(res10)
-mod.out.corr_nouns <- topicCorr(res10_nouns)
 
 pdf("correlation.topics.plot.pdf")
-plot(mod.out.corr, vlabels = c("Topic 1* natural sciences research:", 
-                               "Topic 2* what are we, how we collaborate:",
-                               "Topic 3 African challenges:", 
-                               "Topic 4 Hygiene education:",
-                               "Topic 5* 21st century challenges:", 
-                               "Topic 6 Agricultural education & cultural promotion:", 
-                               "Topic 7: health", 
-                               "Topic 8 Demographic challenges:", 
-                               "Topic 9 Medical education, early 20th century:", 
-                               "Topic 10* Hygiene, psychological wellbeing:"), 
-                               vertex.label.cex = 0.9)
+plot(mod.out.corr, vlabels = c("Topic 1*", 
+                               "Topic 2",
+                               "Topic 3*", 
+                               "Topic 4*",
+                               "Topic 5*", 
+                               "Topic 6*", 
+                               "Topic 7", 
+                               "Topic 8*", 
+                               "Topic 9*", 
+                               "Topic 10*"), 
+     vertex.label.cex = 0.9)
 dev.off()
 
+## Correlation graph only nouns ----
+mod.out.corr_nouns <- topicCorr(res10_nouns)
 
-
-# graphic of the correlation with the given topics
-mod.out.corr <- topicCorr(res10)
+plot(mod.out.corr_nouns, vlabels = c("Topic 1*", 
+                               "Topic 2",
+                               "Topic 3*", 
+                               "Topic 4*",
+                               "Topic 5*", 
+                               "Topic 6*", 
+                               "Topic 7", 
+                               "Topic 8*", 
+                               "Topic 9*", 
+                               "Topic 10*"), 
+     vertex.label.cex = 0.9)
+png("correlation.topics_nouns.plot.png", width = 800, height = 800)
+dev.off()
 
 plot(mod.out.corr_nouns, c(1, 3, 4, 5, 6, 8, 9, 10))
 
-# Getting the Beta (probability of a word to belong to a topic, topical content) ----
+# Getting the Beta (probability of a word to belong to a topic, topical content ----
+# it gives the words with the highest prob of appearing in a topic) 
 beta <- tidy(res10, matrix = "beta")
 beta_nouns <- tidy(res10_nouns, matrix = "beta")
 
-beta %>% 
-  filter(topic %in% c(1, 2, 5, 7,9, 10)) %>% 
+beta_nouns %>% 
+  filter(topic == 1) %>% 
   group_by(topic) %>% 
   slice_max(beta, n = 10)
 
@@ -251,13 +288,17 @@ beta %>%
 gamma <- tidy(res10, matrix = "gamma")
 gamma_nouns <- tidy(res10_nouns, matrix = "gamma")
 
+gamma_nouns %>% 
+  filter(topic == 1) %>% 
+  top_n(gamma, n = 10)
+
 gamma %>% 
   filter(topic %in% c(1, 2, 5, 7, 9)) %>% 
   ggplot(aes(x= document, y = gamma, linetype = factor(topic)))+
   geom_line()
 
-# Take into account those topics with a p>0.25
-gamma %>% 
+# Take into account those topics with a p>0.25 ----
+gamma_nouns %>% 
   filter(gamma > 0.25) %>% 
   ggplot(aes(document, gamma, fill = factor(topic)))+
   geom_col()
@@ -283,7 +324,6 @@ gamma %>%
                                "9"),
                     name = "Topics")+
   ggtitle("Topics and its correlation with time metadata")
-# TODO what would be another way to add a title?
 ggsave("gamma.stat.significant.pdf", units = "cm", width = 26, height = 14)
 
                                 # "#e7b973"
@@ -297,24 +337,21 @@ filter(topic %in% c(1, 3, 4, 5, 6, 8, 9, 10)) %>%
   scale_fill_manual(values = c("#387fc7","#97bea1", "#e57272", "#e63cfe",
                                         "#bfbb8a", "#7459aa", "#8a9ac5", "#6fc0b8"),
                                         labels = c("1.", 
-                                                   "3.", 
-                                                   "4.", 
-                                                   "5.",
-                                                   "6.",
-                                                   "8.",
-                                                   "9.", 
-                                                   "10."),
+                                                   "3. 20th century challenges - African, cities and transport development", 
+                                                   "4. War relief, Insect-borne diseases", 
+                                                   "5. Population issues",
+                                                   "6. Insect-borne diseases & Public health education",
+                                                   "8. 20th century challenges - Climate change",
+                                                   "9. Post-WWII needs", 
+                                                   "10. Expansion of interests"),
                     name = "Topics") +
-  ggtitle("Topics and its correlation with time metadata") 
-
-
-# TODO not working +
-  scale_x_continuous(limits = c(1913, 2013), 
-                     breaks = seq(1913, 2013, 20),
-                     labels = seq(1913, 2013, 20)) +
-  scale_y_continuous()
-# TODO what would be another way to add a title?
-# TODO how to change the xlab
+  ggtitle("Figure X: Noun Topics and its correlation with time metadata") +
+  scale_x_continuous(limits = c(1, 100), 
+                     breaks = seq(1, 100, 10),
+                     labels = seq(1914, 2013, 10)) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Year")
+ggsave("noun topics gamma.pdf", units = "cm", width = 26, height = 14)
 
 
 
@@ -343,3 +380,6 @@ gamma.col.test <- gamma %>%
 cols <- c("2" = "#387fc7", "4" = "#7459aa", "7" = "#af338e", "17" = "#eb0d71")
 gamma.col.test + scale_fill_manual(values = cols)
 
+## TODO V: Topic 9 coperation, schoolool, topc 10 designationstions, administra topic 3 biotechnologyogy ; zimzimbabwe
+
+save.image('stm_10_nouns.RData')

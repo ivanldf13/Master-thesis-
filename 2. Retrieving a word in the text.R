@@ -6,14 +6,19 @@ load("dc.p.final.Rda")
 # locate a word in the corpus
 corpus <- corpus(dc.p.final, docid_field = "Year")
 corpus.tokenised <- tokens(corpus)
-options(max.print = 5000)
-kwic(corpus.tokenised, pattern = "drought tolerant")
+options(max.print = 100)
+kwic(corpus.tokenised, pattern = "com\\s")
 
 
 # , valuetype = "regex"
 # berlin(?=\\sdahlem)
 # TODO what to do with agriculturetural, ofthe, =
-# TODO  schoololarships,  artistinresidence 
+# TODO  schoololarships,  artistinresidence agronomyomy, mns, b, agric. , a. ; agr. coll. ber ph.d. ; -a; zimzimbabwe;
+# TODO administra stm t9 ; designationstions , chatry, t10 associationte, topic 10 designationstions
+# biotechnologyogy, schoolillings, designationstions coperation , chaitry
+hookworm, hookworms, grant, grants, year, years, mittee
+b par tout
+# TODO how to get development of 
 
 corpus.tokenised[[43]] %>% 
   .[str_detect(.,"\\bmem")]

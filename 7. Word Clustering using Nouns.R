@@ -36,7 +36,7 @@ load("CA.NOUNS.Rda")
 # View the most numerous "NOUNS" in the file ----
 # POS.Rockefeller %>%
 # filter(upos == "NOUN") %>%
-#   count(token, sort=TRUE) %>%  print(n=25)
+#   count(lemma, sort=TRUE) %>%  print(n=25)
 
 
 # Word clustering with just nouns ----
@@ -48,16 +48,16 @@ correspondance.matrix.POS <-
   tibble::column_to_rownames("Year")
 
 knitr::kable(correspondance.matrix.POS[1:5,1:5]) %>% 
-  save_kable(file = "CA_ppt.pdf")
+  save_kable(file = "CA_ppt.png")
 
 # Looking whether there is a problem with a row ----
-POS.NOUNS %>% 
-  filter(Year == 2009) %>% 
-  arrange(desc(n))
-
-CA.NOUNS$row$contrib[,2] %>% 
-  sort(., decreasing = TRUE) %>% 
-  head(., n= 5)
+# POS.NOUNS %>% 
+#   filter(Year == 2009) %>% 
+#   arrange(desc(n))
+# 
+# CA.NOUNS$row$contrib[,2] %>% 
+#   sort(., decreasing = TRUE) %>% 
+#   head(., n= 5)
 
 correspondance.matrix.POS[is.na(correspondance.matrix.POS)] <- 0
 nrow(correspondance.matrix.POS)
@@ -75,13 +75,11 @@ freq.rep %>%
   labs(y = "Number of words per year") +
   theme(legend.position = "none")
 
-ggsave("number.of.words.per.year.pdf", units = "cm", width = 26, height = 14)
+ggsave("number.of.words.per.year.png", units = "cm", width = 26, height = 14)
 
 
 # Getting the chi-square ----
 chisq.test(correspondance.matrix.POS)
-
-# assocstats(correspondance.matrix.POS)
 
 correspondance.matrix.POS %>% 
   cramer_v()
@@ -89,7 +87,7 @@ correspondance.matrix.POS %>%
 # Getting the eigen values ----
 get_eigenvalue(CA.NOUNS)
 
-pdf("eigen.values.screeplot.pdf")
+png("eigen.values.screeplot.png")
 fviz_eig(CA.NOUNS, addlabels = TRUE, ylim = c(0,50))
 dev.off()
 
@@ -100,7 +98,7 @@ CA.NOUNS$col$cos2[ ,-3:-5] %>%
   ggcorrplot(lab = TRUE, lab_size = 2.5)
 
 ## Just the 1st dimension ----
-pdf("Dim1.pdf")
+png("Dim1.png")
 Dim1 <- CA.NOUNS$col$cos2[ ,1] %>%
   .[order(., decreasing=TRUE)] %>% 
   .[.>=0.3] %>% 
@@ -112,7 +110,7 @@ Dim1 %>%
 dev.off()
 
 ## Just the 2nd dimension ----
-pdf("Dim2.pdf")
+png("Dim2.png")
 Dim2 <- CA.NOUNS$col$cos2[, 2] %>%
   .[order(., decreasing=TRUE)] %>% 
   .[. >=0.3] %>% 
@@ -123,15 +121,15 @@ Dim2 %>%
 dev.off()
 
 # Plots ----
-pdf("biplot.pdf")
+png("biplot.png")
 fviz_ca_biplot(CA.NOUNS)
 dev.off()
 
-pdf("row.points.CA.pdf")
+png("row.points.CA.png")
 fviz_ca_row(CA.NOUNS)
 dev.off()
 
-pdf("col.points.CA.pdf")
+png("col.points.CA.png")
 fviz_ca_col(CA.NOUNS)
 dev.off()
 
@@ -139,63 +137,68 @@ dev.off()
 # correspondance.matrix.POS$dim2 <- CA.NOUNS$svd$U[,2]
 
 # How many clusters would be optimal? ----
+png("kmeans_k.png")
 fviz_nbclust(correspondance.matrix.POS, kmeans, method = "gap_stat")
+dev.off()
+
+png("hcut_k.png")
 fviz_nbclust(correspondance.matrix.POS, hcut, method = "gap_stat")
+dev.off()
 
 # Looking at cos2 of rows ----
-pdf("cos2.row.dim1&2.pdf")
+png("cos2.row.dim1&2.png")
 fviz_cos2(CA.NOUNS, choice = "row", axes = 1:2, top = 15)
 dev.off()
 
-pdf("cos2.row.dim1.pdf")
+png("cos2.row.dim1.png")
 fviz_cos2(CA.NOUNS, choice = "row", axes = 1, top = 15)
 dev.off()
 
-pdf("cos2.row.dim2.pdf")
+png("cos2.row.dim2.png")
 fviz_cos2(CA.NOUNS, choice = "row", axes = 2, top = 15)
 dev.off()
 
 # Looking at the contributions of rows ----
 fviz_contrib(CA.NOUNS, choice = "row", axes = 1:2)
 
-pdf("contrib.rows.dim1&2.pdf")
+png("contrib.rows.dim1&2.png")
 fviz_contrib(CA.NOUNS, choice = "row", axes = 1:2, top = 15)
 dev.off()
 
-pdf("contrib.rows.dim1.pdf")
+png("contrib.rows.dim1.png")
 fviz_contrib(CA.NOUNS, choice = "row", axes = 1, top = 15)
 dev.off()
 
-pdf("contrib.rows.dim2.pdf")
+png("contrib.rows.dim2.png")
 fviz_contrib(CA.NOUNS, choice = "row", axes = 2, top = 15)
 dev.off()
 
 # Looking at cos2 of cols ----
 fviz_cos2(CA.NOUNS, choice = "col", axes = 1:2)
-pdf("cos2.col.dim1&2.pdf")
+png("cos2.col.dim1&2.png")
 fviz_cos2(CA.NOUNS, choice = "col", axes = 1:2, top = 15)
 dev.off()
 
-pdf("cos2.col.dim1.pdf")
+png("cos2.col.dim1.png")
 fviz_cos2(CA.NOUNS, choice = "col", axes = 1, top = 15)
 dev.off()
 
-pdf("cos2.col.dim2.pdf")
+png("cos2.col.dim2.png")
 fviz_cos2(CA.NOUNS, choice = "col", axes = 2, top = 15)
 dev.off()
 
 
 # Looking at the contributions of columns ----
 fviz_contrib(CA.NOUNS, choice = "col", axes = 1:2)
-pdf("contrib.col.dim1&2.pdf")
+png("contrib.col.dim1&2.png")
 fviz_contrib(CA.NOUNS, choice = "col", axes = 1:2, top = 15)
 dev.off()
 
-pdf("contrib.col.dim1.pdf")
+png("contrib.col.dim1.png")
 fviz_contrib(CA.NOUNS, choice = "col", axes = 1, top = 15)
 dev.off()
 
-pdf("contrib.col.dim2.pdf")
+png("contrib.col.dim2.png")
 fviz_contrib(CA.NOUNS, choice = "col", axes = 2, top = 15)
 dev.off()
 
@@ -252,6 +255,11 @@ head(res.desc[[2]]$col, 5)
 # Hierarchical Cluster ----
 HCPC.NOUNS <- HCPC(CA.NOUNS, nb.clust = 5) 
 save(HCPC.NOUNS, file = "HCPC.NOUNS.Rda")    
+factor_map_plot <- plot(HCPC.NOUNS, choice = "map", draw.tree = FALSE,
+     title = "Figure X: Factor map with the five clusters")
+ggsave("factor map.png", plot = factor_map_plot, width = 8, height = 6, dpi = 300)
+# FIXME V the factor map file is white, possible to include the second dimension?
+
 
 fviz_cluster(HCPC.NOUNS, show.clust.cent = TRUE)
 
@@ -280,14 +288,11 @@ merge(wordnumperyear, clusters) %>%
   facet_wrap(vars(clust), scales = "free") +
   scale_y_reordered()
 
-HCPC.NOUNS
-
-HCPC.NOUNS$desc.var
-
 # Dendogram 
 fviz_dend(HCPC.NOUNS, show_labels = FALSE)
 
 # Which are the most representative reports of the clusters? ----
+# FIXME V how can I export this to put it in the annex?
 HCPC.NOUNS$desc.ind$para$`1`
 HCPC.NOUNS$desc.ind$dist$`1`
 
@@ -306,8 +311,10 @@ HCPC.NOUNS$desc.ind$dist$`5`
 ## Which are the reports for the X clust? ----
 HCPC.NOUNS$data.clust %>% 
   tibble::rownames_to_column("Year") %>% 
-  group_by(clust) %>% distinct(Year) %>% 
-  filter(clust == 4) %>% 
+  group_by(clust) %>% 
+  distinct(Year) %>% 
+  filter(clust == 5) %>% 
+  arrange(Year) %>% 
   print(n= 51)
 
 

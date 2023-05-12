@@ -21,32 +21,31 @@ load("dc.p.final.Rda")
 plan(multisession, workers = 4) 
 pos.model <- udpipe_load_model("english-ewt-ud-2.5-191206.udpipe")
 
-ftest <- function(text) {
-  res <- udpipe(x = text, "english-ewt", model_dir ="/Users/ivanlorenci/Desktop/R Stuff/RProjects/Annual Reports") %>% 
-    as.data.frame() %>% 
-    select(token,upos)
-  return(res)
-}
-
-# POS with lemmanization ----
 # ftest <- function(text) {
 #   res <- udpipe(x = text, "english-ewt", model_dir ="/Users/ivanlorenci/Desktop/R Stuff/RProjects/Annual Reports") %>% 
 #     as.data.frame() %>% 
-#     select(token, lemma, upos)
+#     select(token,upos)
 #   return(res)
 # }
+
+# POS with lemmanization ----
+ftest <- function(text) {
+  res <- udpipe(x = text, "english-ewt", model_dir ="/Users/ivanlorenci/Desktop/R Stuff/RProjects/Annual Reports") %>%
+    as.data.frame() %>%
+    select(token, lemma, upos)
+  return(res)
+}
 
 
 
 POS.Rockefeller <- dc.p.final %>%
   unnest_sentences("text", text) %>% 
-  # filter(row_number() %in% seq(1,100, 1)) %>%
   mutate(text = str_squish(text)) %>%
-  mutate(tag = future_map(text,ftest)) %>%
+  mutate(tag = future_map(text, ftest)) %>%
   unnest(tag) %>% 
   group_by(Year) %>% 
   count(token, upos) %>% 
-  ungroup()
+  ungroup() 
 
 save(POS.Rockefeller, file = "POS.Rockefeller.Rda")
 
@@ -69,3 +68,5 @@ POS.NOUNS <- POS.Rockefeller %>%
   ungroup()
 
 save(POS.NOUNS, file = "POS.NOUNS.Rda")
+
+
