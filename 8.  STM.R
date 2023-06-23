@@ -46,26 +46,24 @@ searchk_5.20_nouns <- searchK(documents = dfm_nouns,
                         prevalence = metadata,
                         cores = 4,
                         heldout.seed = 9)
-
+# set.seed()
 save(searchk_5.20_nouns, file = "searchk_5.20_nouns.Rda")
 
-# TODO results of the tibble below still change despite the seed
 
 ## Looking for the best K ----
 exclus <- scale(unlist(searchk_5.20$results$exclus))
 semcoh <- scale(unlist(searchk_5.20$results$semcoh))
 
 
-# TODO V where are the exclus and semcoh values standarised with the scale, right?
-## number of topics suggested 
+## number of topics suggested ----
 tibble(k = 5:20, exclus = exclus[,1], semcoh = semcoh[,1]) %>% 
   pivot_longer(c(exclus, semcoh), names_to = "scores", values_to = "values") %>% 
   ggplot(aes(k, values, linetype = scores)) +
   geom_line() +
   scale_x_continuous(breaks = 5:20) +
-  scale_linetype_manual(values=c("solid", "dashed"), 
-                        name="Score Type", 
-                        labels=c("Exclusivity", "Semantic Coherence")) +
+  scale_linetype_manual(values = c("solid", "dashed"), 
+                        name = "Score Type", 
+                        labels = c("Exclusivity", "Semantic Coherence")) +
   labs(x = "Number of suggested topics", y = "Standarised values") +
   ggtitle("Figure X: Number of topic suggested by exclusivity and semantic coherence")
 ggsave("number.of.topics.stm.pdf", units = "cm", width = 26, height = 14)
@@ -89,6 +87,8 @@ ggsave("number.of.topics.stm.nouns.pdf", units = "cm", width = 26, height = 14)
 
 # Estimation of the STM
 ## 10 topics, all words ----
+set.seed(2216013)
+
 res10 <- stm(documents=dfm,
              K=10,
              prevalence = metadata,
@@ -99,24 +99,14 @@ res10 <- stm(documents=dfm,
 save(res10, file = "res10.Rda")
 
 ## 10 topics, only nouns ----
-res10_nouns <- stm(documents=dfm_nouns,
+set.seed(2216013)
+res10_nouns <- stm(documents = dfm_nouns,
                    K=10,
                    prevalence = metadata,
                    max.em.its = 150,
                    # data=meta,
                    init.type="Spectral")
 save(res10_nouns, file = "res10_nouns.Rda")
-
-### 20 topics, all words ----
-# res20 <- stm(documents=dfm,
-#            K=20,
-#            prevalence = metadata,
-#            max.em.its = 150,
-#            # data=meta,
-#            init.type = "Spectral",
-#            content = ~ b4.after)
-# save(res20, file = "res20.Rda")
-
 
 
 # What are the words belonging to each topic? ----
@@ -127,6 +117,8 @@ save(topics.dfm.10, file = "topics.dfm.10.Rda")
 
 ## What are the words belonging to each topic - only nouns ----
 labelTopics(res10_nouns, n = 20, frexweight = 0.25)
+,
+            topics = c(1, 3, 4, 5, 6, 8, 9, 10))
 topics.dfm.10_nouns <- labelTopics(res10_nouns, n = 20, frexweight = 0.25, 
                                    topics = c(1, 3, 4, 5, 6, 8, 9, 10))
 
@@ -142,9 +134,6 @@ png("prueba.png")
 knitr::include_graphics(tmp_file)
 dev.off()
 
-
-# FIXME V no funsiona ;(
-
 topics.dfm.10_nouns$frex
 topics.dfm.9$frex
 topics.dfm.10_nouns
@@ -154,8 +143,8 @@ topics.dfm.10_nouns
 thoughts10 <- findThoughts(res10, topics = 1, texts = dc.np.final$Year, n = 5)$docs[[1]]
 plotQuote(thoughts10,    width    =    30,    main    =   "Topic 10")
 ## Only nouns
-thoughts10_nouns <- findThoughts(res10_nouns, topics = 4, texts = dc.np.final$Year, n = 10)$docs[[1]]
-plotQuote(thoughts10_nouns,    width    =    30,    main    =   "Topic 4")
+thoughts10_nouns <- findThoughts(res10_nouns, topics = 3, texts = dc.np.final$Year, n = 20)$docs[[1]]
+plotQuote(thoughts10_nouns,    width    =    30,    main    =   "Topic 3")
 
 
 toughts10_nouns <- findThoughts(res10_nouns)
@@ -289,8 +278,13 @@ gamma <- tidy(res10, matrix = "gamma")
 gamma_nouns <- tidy(res10_nouns, matrix = "gamma")
 
 gamma_nouns %>% 
-  filter(topic == 1) %>% 
-  top_n(gamma, n = 10)
+  filter(topic == 3) %>% 
+  top_n(gamma, n = 30)
+
+gamma_nouns %>%
+  filter(topic == 8) %>%
+  mutate(label = seq(1914, 2013)) %>% 
+  print(n = 100)
 
 gamma %>% 
   filter(topic %in% c(1, 2, 5, 7, 9)) %>% 
@@ -341,7 +335,7 @@ filter(topic %in% c(1, 3, 4, 5, 6, 8, 9, 10)) %>%
                                                    "4. War relief, Insect-borne diseases", 
                                                    "5. Population issues",
                                                    "6. Insect-borne diseases & Public health education",
-                                                   "8. 20th century challenges - Climate change",
+                                                   "8. Smart Globalisation",
                                                    "9. Post-WWII needs", 
                                                    "10. Expansion of interests"),
                     name = "Topics") +
@@ -379,7 +373,5 @@ gamma.col.test <- gamma %>%
 # gamma.col.test + scale_fill_manual(values = c("red", "blue", "green", "black"))
 cols <- c("2" = "#387fc7", "4" = "#7459aa", "7" = "#af338e", "17" = "#eb0d71")
 gamma.col.test + scale_fill_manual(values = cols)
-
-## TODO V: Topic 9 coperation, schoolool, topc 10 designationstions, administra topic 3 biotechnologyogy ; zimzimbabwe
 
 save.image('stm_10_nouns.RData')

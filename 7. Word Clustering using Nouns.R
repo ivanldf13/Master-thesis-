@@ -44,11 +44,33 @@ load("CA.NOUNS.Rda")
 correspondance.matrix.POS <- 
   POS.NOUNS %>%
   filter(n > 40) %>%
-  spread(key = token, value = n) %>% 
-  tibble::column_to_rownames("Year")
+  spread(key = token, value = n, fill = 0) %>% 
+  tibble::column_to_rownames("Year") 
 
-knitr::kable(correspondance.matrix.POS[1:5,1:5]) %>% 
-  save_kable(file = "CA_ppt.png")
+
+library(dplyr)
+
+
+# Extract the first five rows
+rows <- slice(correspondance.matrix.POS, 1:5)
+
+# Extract the first five columns from the extracted rows
+table_data <- select(rows, 1:5)
+
+# Print the table
+print(table_data)
+
+formatted_table <- kable(table_data, caption = "Table X: Word Frequency per Year",
+                         align = "c") %>% 
+  kable_styling(bootstrap_options = "striped",
+                font_size = 16)
+save_kable(formatted_table, file = "freq_table.png")
+# Save the HTML table as a PNG file
+webshot::webshot(formatted_table, file = "output.png")
+
+
+# TODO mejorar la tabla
+
 
 # Looking whether there is a problem with a row ----
 # POS.NOUNS %>% 
@@ -207,8 +229,11 @@ fviz_ca_row(CA.NOUNS, select.row = list(cos2 = 0.3))
 
 fviz_ca_col(CA.NOUNS, select.col = list(cos2 = 0.7))
 
-fviz_ca_biplot(CA.NOUNS, select.row = list(cos2 = 0.29),
-               select.col = list(cos2 = 0.6)) +
+fviz_ca_biplot(CA.NOUNS, 
+               repel = TRUE,
+               select.row = list(cos2 = 0.29),
+               select.col = list(cos2 = 0.65),
+               title = "Figure X: Top cos2 individuals")+
   theme_minimal()
 
 ## Looking at the top contributors columns/rows ----
@@ -226,10 +251,12 @@ fviz_ca_col(CA.NOUNS, select.col = list(contrib = 10))+
   theme_minimal()
 
 # Contribution Biplotting ----
-fviz_ca_biplot(CA.NOUNS, map="colgreen", arrow = c(FALSE, TRUE),
+fviz_ca_biplot(CA.NOUNS, 
+               map = "colgreen", 
+               arrow = c(FALSE, TRUE),
                repel = TRUE, top = 15)
 
-fviz_ca_col(CA.NOUNS, map="colgreen", arrow = c(TRUE),
+fviz_ca_col(CA.NOUNS, map = "colgreen", arrow = c(TRUE),
             repel = TRUE, top = 15)
 
 # TODO What to do with this graph? Read the book
@@ -255,10 +282,13 @@ head(res.desc[[2]]$col, 5)
 # Hierarchical Cluster ----
 HCPC.NOUNS <- HCPC(CA.NOUNS, nb.clust = 5) 
 save(HCPC.NOUNS, file = "HCPC.NOUNS.Rda")    
-factor_map_plot <- plot(HCPC.NOUNS, choice = "map", draw.tree = FALSE,
-     title = "Figure X: Factor map with the five clusters")
-ggsave("factor map.png", plot = factor_map_plot, width = 8, height = 6, dpi = 300)
-# FIXME V the factor map file is white, possible to include the second dimension?
+factor_map_plot <- plot(HCPC.NOUNS, 
+                        choice = "map", 
+                        draw.tree = FALSE,
+                        title = "Figure X: Factor map with the five clusters")
+
+ggsave("factor_map.png", plot = factor_map_plot, width = 10, height = 7.5, dpi = 300)
+# FIXME V: the factor map file is white, possible to include the second dimension?
 
 
 fviz_cluster(HCPC.NOUNS, show.clust.cent = TRUE)
@@ -290,11 +320,20 @@ merge(wordnumperyear, clusters) %>%
 
 # Dendogram 
 fviz_dend(HCPC.NOUNS, show_labels = FALSE)
+fviz_dend(HCPC.NOUNS, 
+          show_labels = FALSE,
+          cex = 0.5,
+          color_labels_by_k = TRUE,
+          type = "rectangle", 
+          repel = TRUE,
+          main = "Figure X: Cluster Dendogram"
+          )
+# TODO completar el dendogram
 
 # Which are the most representative reports of the clusters? ----
-# FIXME V how can I export this to put it in the annex?
-HCPC.NOUNS$desc.ind$para$`1`
-HCPC.NOUNS$desc.ind$dist$`1`
+HCPC.NOUNS$desc.ind$para$`1` %>% 
+  belle_table("para_1.png")
+as.data.frame(HCPC.NOUNS$desc.ind$dist$`1`)
 
 HCPC.NOUNS$desc.ind$para$`2`
 HCPC.NOUNS$desc.ind$dist$`2`
@@ -307,6 +346,21 @@ HCPC.NOUNS$desc.ind$dist$`4`
 
 HCPC.NOUNS$desc.ind$para$`5`
 HCPC.NOUNS$desc.ind$dist$`5`
+
+
+belle_table <- function(table, file){
+  table %>% 
+    as.data.frame() %>%
+    tibble::rownames_to_column("year") %>% 
+    pivot_wider(names_from = 1, values_from = 2) %>%
+    gt() %>%
+    gt::gtsave(filename = file)
+}
+
+HCPC.NOUNS$desc.ind$para$`1` %>% 
+  as.data.frame() %>%
+  kable() %>% 
+  save_kable(file = "para_1.png")
 
 ## Which are the reports for the X clust? ----
 HCPC.NOUNS$data.clust %>% 

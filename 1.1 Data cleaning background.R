@@ -27,7 +27,7 @@ Corpus <- Corpus %>%
   
 
 # Cleaning the most salient things to erase, unless punctuation ----
-# data.clean is the file before the unnest function, with the 1st layer of
+# data.clean is the file before the unnest function (un text par ligne), with the 1st layer of
 # cleaning (words wrongly written) & lower cases
 ##Cleaning and creating the data with NO punctuation ----
 data.clean.no.punct <- Corpus  %>% 
@@ -2392,8 +2392,12 @@ tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
                         "ooo", "ps", "da", "b.sc", ".ft", "a.", "sr.", "a.b.", 
                         "a.m.", "univ.", ".v.m", "xmv", "am", "cc", "du", "candi")))
 
-#  TODO tokenised.no.punct.nsw.Rda: un mot par ligen, mais dc.np. un text par ligne
-  
+
+# TODO quoi faire avec ce table? 
+table <- kable(head(tokenised.no.punct, 5)) %>%
+  kable_styling() %>%
+  add_header_above(c("Figure X: " = 2))
+
 save(tokenised.punct, file = "tokenised.punct.Rda")
 save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
 
@@ -2403,7 +2407,7 @@ dc.np.final <- tokenised.no.punct.nsw %>%
 
 dc.p.final <- tokenised.punct %>% 
   group_by(Year) %>% 
-  summarise(text = paste(words, collapse=" "))
+  summarise(text = paste(words, collapse = " "))
 
 save(dc.np.final, file = "dc.np.final.Rda")
 save(dc.p.final, file= "dc.p.final.Rda")
@@ -2428,7 +2432,6 @@ wordnumperyear <- two_words %>%
   bind_rows(wordnumperyear) %>% 
   filter(!str_detect(words, "\\s|\\-"))
 
-# TODO why do we use tokenised.no.punct.nsw and not dc.np.final?
 save(wordnumperyear, file = "wordnumperyear.Rda")
 
 
@@ -2450,6 +2453,18 @@ table.per.period <- tokenised.no.punct.nsw %>%
   filter(n> 10) 
 
 save(table.per.period, file = "table.per.period.Rda")
+# Creating a figure for the top20 words of whole corpus by period
+table.per.period %>% 
+  top_n(n, n = 20) %>% 
+  ggplot(aes(n, reorder_within(words, n, period), group = period))+
+  geom_col()+
+  facet_wrap(~period, scales = "free_y")+
+  scale_y_reordered()+
+  labs(y="TOP 20")+
+  theme(legend.position = "none") +
+  ggtitle("Figure X: Top 20 words for the whole of the corpus")
+
+ggsave("graph-top20.png", units = "cm", width = 26, height = 30)
 
 # Creating a table per year for the whole of the corpus ----
 table.per.year <- tokenised.no.punct.nsw %>% 
@@ -2476,12 +2491,11 @@ freq.rep <- summary(corpus(dc.np.final)) %>%
 freq.rep %>% 
   ggplot(aes(Year, Tokens)) +
   geom_line() +
-  labs(y = "Number of words per year",
-       title = "Figure X") +
+  labs(y = "Number of words",
+       title = "Figure X: Number of Words per Year") +
   theme(legend.position = "none")
-  
 
-ggsave("number.of.words.per.year.pdf", units = "cm", width = 26, height = 14)
+ggsave("number.of.words.per.year.png", units = "cm", width = 26, height = 14)
 
 
 # Retrieving one specific document and one specific word ----
