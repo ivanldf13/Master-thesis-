@@ -6,8 +6,8 @@ load("dc.p.final.Rda")
 # locate a word in the corpus
 corpus <- corpus(dc.np.final, docid_field = "Year")
 corpus.tokenised <- tokens(corpus)
-options(max.print = 100)
-kwic(corpus.tokenised, pattern = "ofthe")
+options(max.print = 1000)
+kwic(corpus.tokenised, pattern = "ubiquity")
 
 
 # , valuetype = "regex"

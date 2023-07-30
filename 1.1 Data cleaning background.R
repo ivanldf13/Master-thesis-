@@ -1689,7 +1689,7 @@ freq.million.the <- freq.million %>%
 save(freq.million, freq.million.and, freq.million.the, file = "freq.million.Rda")
 
 # 3rd Cleaning stopwords ----
-tokenised.no.punct.nsw <- anti_join(tokenised.no.punct,stop)
+tokenised.no.punct.nsw <- anti_join(tokenised.no.punct.nsw ,stop)
 save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
 
 # 4th Cleaning ----
