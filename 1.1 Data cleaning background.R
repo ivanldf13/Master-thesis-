@@ -3,6 +3,7 @@ library(dplyr)
 library(ggplot2)
 library(quanteda)
 library(readtext)
+library(knitr)
 # library(spacyr)
 library(stringr)
 library(tidyr)
@@ -1689,7 +1690,7 @@ freq.million.the <- freq.million %>%
 save(freq.million, freq.million.and, freq.million.the, file = "freq.million.Rda")
 
 # 3rd Cleaning stopwords ----
-tokenised.no.punct.nsw <- anti_join(tokenised.no.punct.nsw ,stop)
+tokenised.no.punct.nsw <- anti_join(tokenised.no.punct ,stop)
 save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
 
 # 4th Cleaning ----

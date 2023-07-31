@@ -6,6 +6,7 @@ library(readtext)
 library(stringr)
 library(tidyr)
 library(tidytext)
+library(knitr)
 
 # Retrieving and reading the documents to be used ----
 Corpus <- readtext("./AR.TXT/*.pdf") 
@@ -1684,7 +1685,7 @@ freq.million.the <- freq.million %>%
 save(freq.million, freq.million.and, freq.million.the, file = "freq.million.Rda")
 
 # 3rd Cleaning stopwords ----
-tokenised.no.punct.nsw <- anti_join(tokenised.no.punct.nsw ,stop)
+tokenised.no.punct.nsw <- anti_join(tokenised.no.punct ,stop)
 save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
 
 # 4th Cleaning ----

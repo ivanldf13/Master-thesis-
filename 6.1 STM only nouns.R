@@ -110,7 +110,7 @@ save(topics.dfm.10_nouns, file = "topics.dfm.10_nouns.Rda")
 
 # Graph of the topics' proportion, only nouns ----
 png("plot.expected.topic.proportions.png", width = 1000, height = 600)
-plot(res10_nouns, type = "summary", topic.names = c("T1*:", 
+plot(res10_nouns, type = "summary", topic.names = c("T1*: Goal-oriented programmes:", 
                                                     "T2:",
                                                     "T3*: 20th century challenges - African, cities and transport development:", 
                                                     "T4*: War relief, Insect-borne diseases:", 
@@ -231,7 +231,7 @@ gamma_nouns %>%
   geom_col()+
   scale_fill_manual(values = c("#387fc7","#97bea1", "#e57272", "#e63cfe",
                                "#bfbb8a", "#7459aa", "#8a9ac5", "#6fc0b8"),
-                    labels = c("1.", 
+                    labels = c("1. Goal-oriented programmes", 
                                "3. Globalisation challenges", 
                                "4. War relief, Insect-borne diseases", 
                                "5. Population issues & Education for development",
@@ -256,7 +256,7 @@ gamma_nouns %>%
   geom_col()+
   scale_fill_manual(values = c("#387fc7","#008080", "#97bea1", "#e57272", "#e63cfe",
                                "#bfbb8a","#800000", "#7459aa", "#8a9ac5", "#6fc0b8"),
-                    labels = c("1. ", 
+                    labels = c("1. Goal-oriented programmes", 
                                "2. Topic 2",
                                "3. Globalisation challenges", 
                                "4. War relief, Insect-borne diseases", 

@@ -48,15 +48,15 @@ rows <- slice(correspondance.matrix.POS, 1:5)
 table_data <- select(rows, 1:5)
 
 # Print the table
-print(table_data)
-
-formatted_table <- kable(table_data, caption = "Table 2: Word Frequency per Year",
-                         align = "c") %>% 
-  kable_styling(bootstrap_options = "striped",
-                font_size = 16)
-save_kable(formatted_table, file = "freq_table.png")
-# Save the HTML table as a PNG file
-webshot::webshot(formatted_table, file = "output.png")
+# print(table_data)
+# 
+# formatted_table <- kable(table_data, caption = "Table 2: Word Frequency per Year",
+#                          align = "c") %>% 
+#   kable_styling(bootstrap_options = "striped",
+#                 font_size = 16)
+# save_kable(formatted_table, file = "freq_table.png")
+# # Save the HTML table as a PNG file
+# webshot::webshot(formatted_table, file = "output.png")
 
 
 # TODO mejorar la tabla
@@ -296,17 +296,17 @@ save(clusters, file = "clusters.HCPC.Rda")
 clusters %>% 
   filter(str_detect(Year, "2009"))
 
-merge(wordnumperyear, clusters) %>% 
-  group_by(clust, words) %>% 
-  summarize(n = sum(n)) %>% 
-  arrange(desc(n)) %>% 
-  bind_tf_idf(words, clust, n) %>% 
-  filter(clust %in% 1:5) %>% 
-  slice_max(tf_idf , n = 40) %>% 
-  ggplot(aes(tf_idf, reorder_within(words, tf_idf, clust))) +
-  geom_col() +
-  facet_wrap(vars(clust), scales = "free") +
-  scale_y_reordered()
+# merge(wordnumperyear, clusters) %>% 
+#   group_by(clust, words) %>% 
+#   summarize(n = sum(n)) %>% 
+#   arrange(desc(n)) %>% 
+#   bind_tf_idf(words, clust, n) %>% 
+#   filter(clust %in% 1:5) %>% 
+#   slice_max(tf_idf , n = 40) %>% 
+#   ggplot(aes(tf_idf, reorder_within(words, tf_idf, clust))) +
+#   geom_col() +
+#   facet_wrap(vars(clust), scales = "free") +
+#   scale_y_reordered()
 
 # Dendogram 
 fviz_dend(HCPC.NOUNS, show_labels = FALSE)
@@ -320,9 +320,9 @@ fviz_dend(HCPC.NOUNS,
 )
 
 # Which are the most representative reports of the clusters? ----
-HCPC.NOUNS$desc.ind$para$`1` %>% 
-  belle_table("para_1.png")
-as.data.frame(HCPC.NOUNS$desc.ind$dist$`1`)
+# HCPC.NOUNS$desc.ind$para$`1` %>% 
+#   belle_table("para_1.png")
+# as.data.frame(HCPC.NOUNS$desc.ind$dist$`1`)
 
 HCPC.NOUNS$desc.ind$para$`2`
 HCPC.NOUNS$desc.ind$dist$`2`
