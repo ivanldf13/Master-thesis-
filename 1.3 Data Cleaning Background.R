@@ -2390,12 +2390,12 @@ tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
 
 
 # TODO quoi faire avec ce table? 
-table <- kable(head(tokenised.no.punct, 5)) %>%
-  kableExtra::kable_styling() %>%
-  kableExtra::add_header_above(c("Figure 3: " = 2))
-
-save(tokenised.punct, file = "tokenised.punct.Rda")
-save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
+# table <- kable(head(tokenised.no.punct, 5)) %>%
+#   kableExtra::kable_styling() %>%
+#   kableExtra::add_header_above(c("Figure 3: " = 2))
+# 
+# save(tokenised.punct, file = "tokenised.punct.Rda")
+# save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
 
 dc.np.final <- tokenised.no.punct.nsw %>% 
   group_by(Year) %>% 
