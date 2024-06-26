@@ -1,15 +1,6 @@
 # Loading useful packages ----
-library(tidytext)
-library(dplyr)
-library(stm)
-library(stringr)
-library(broom)
-library(ggplot2)
-library(wordcloud)
-library(corrplot)
-library(igraph)
-library(stmCorrViz)
-library(tidyr)
+library(pacman)
+p_load(tidytext, dplyr, stm, stringr, broom, ggplot2, wordcloud, corrplot, igraph, stmCorrViz, tidyr)
 
 #Loading useful files ----
 load("dc.np.final.Rda")

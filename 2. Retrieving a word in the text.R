@@ -1,14 +1,14 @@
-library(quanteda)
-library(dplyr)
-library(tidyr)
+library(pacman)
+p_load(quanteda, dplyr, tidyr)
+
 load("dc.np.final.Rda")
 load("dc.p.final.Rda")
 # locate a word in the corpus
-corpus <- corpus(dc.np.final, docid_field = "Year")
+corpus <- corpus(dc.np.final, docid_field = "Year", text_field = "text")
 corpus.tokenised <- tokens(corpus)
 options(max.print = 1000)
-kwic(corpus.tokenised, pattern = "ubiquity")
-
+kwic(corpus.tokenised, pattern = "iiuiuiuv")
+# TODO i had to add the text_field argument, et pourtant before it was working
 
 # , valuetype = "regex"
 # berlin(?=\\sdahlem)
@@ -23,7 +23,7 @@ dc.np.final %>%
   select(-text) %>% 
   distinct(Year)
 
-# Checking
+# Checking, retrieving element nºX
 dc.np.final %>% 
   filter(Year == 1956) %>% 
   pull(text) %>% 

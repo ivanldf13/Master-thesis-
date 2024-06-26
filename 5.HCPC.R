@@ -1,14 +1,6 @@
-library(FactoMineR)
-library(factoextra)
-library(dplyr)
-library(ggplot2)
-library(tidyr)
-library(tidytext)
-library(corrplot)
-library(FactoInvestigate)
-library(Factoshiny)
-library(factoextra)
-library(ggcorrplot)
+library(pacman)
+p_load(FactoMineR, factoextra, tidiverse, tidyr, corrplot, Factoinvestigate, Factoshiny, ggcorrplot)
+
 load("wordnumperyear.Rda")
 
 # CA per year ----

@@ -1,15 +1,15 @@
+# Cleaning and preparation of the data script
+# It takes +/- 42' to run
+
 # Loading useful packages ----
-library(dplyr)
-library(ggplot2)
-library(quanteda)
-library(readtext)
-library(stringr)
-library(tidyr)
-library(tidytext)
-library(knitr)
+library(pacman)
+p_load(dplyr, ggplot2, quanteda, readtext, knitr, stringr, tidyr, tidytext, beepr)
+
 
 # Retrieving and reading the documents to be used ----
 Corpus <- readtext("./AR.TXT/*.pdf") 
+
+# load("Corpus.Rda")
 
 # Create the Stopwords (ENG) objects ----
 stop <- tibble(words = stopwords::data_stopwords_stopwordsiso$en)
@@ -20,9 +20,8 @@ Corpus <- Corpus %>%
          Year = as.numeric(Year)) %>% 
   select(-doc_id)
 
-
 # Cleaning the most salient things to erase, unless punctuation ----
-# data.clean.(X) is the file before the unnest function (one text per line), with the 1st layer of
+# data.clean.(no.punct/punct) is the file before the unnest function (one text per line), with the 1st layer of
 # cleaning (words wrongly written) & lower cases
 
 ## Cleaning and creating the data with NO punctuation ----
@@ -788,13 +787,13 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "annouriced", "announced"),
          text = str_replace_all(text, "\\bmem\\sber(s)?", "member\\1"),
          text = str_replace_all(text, "resuits", "results"),
-         text = str_replace_all(text, "centrol", "central"))
+         text = str_replace_all(text, "centrol", "central"),
+         text = str_replace_all(text, "ofthel", "of the"))
 
 
 ## Cleaning and creating the data with punctuation ---- 
 data.clean.punct <- Corpus  %>% 
   mutate(text = str_replace_all(text, "\\n", " "),
-         text = str_remove_all(text, "[:punct:]"),
          text = str_remove_all(text, "[:digit:]"),
          text = str_remove_all(text, "_+"),
          text = str_remove_all(text, "(\\$|\\~|c~|\\^|\\£|\\^|<>|<|>|¯|>>|⇒|→|>oo|\\boo\\b|°|±|™|\\+|\\-|\\¥|\\■|\\|)\\w?"),
@@ -1557,24 +1556,6 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "centrol", "central"))
 
 
-
-
-# data.clean.punct <- data.clean.punct  %>% 
-#   mutate(text = str_replace_all(text, "resilierice", "resilience"),
-#          text = str_replace_all(text, "refererice", "reference"),
-#          text = str_replace_all(text, "experierice", "experience"),
-#          text = str_replace_all(text, "confererice", "conference"),
-#          text = str_replace_all(text, "influerice", "influence"),
-#          text = str_replace_all(text, "corresponderice", "correspondence"),
-#          text = str_replace_all(text, "independerice", "independence"),
-#          text = str_replace_all(text, "scierice", "science"),
-#          text = str_replace_all(text, "scierices", "sciences"),
-#          text = str_replace_all(text, "balarice", "balance"),
-#          text = str_replace_all(text, "florerice", "florence"),
-#          text = str_replace_all(text, "preserice", "presence"),
-#          text = str_replace_all(text, "intracontmental", "intracontinental"),
-#          text = str_replace_all(text, "enharice", "enhace"))
-
 ## Changing the class of the object. The best class to see elements within an object is tibble ----
 data.clean.no.punct <- tibble(data.clean.no.punct)
 save(data.clean.no.punct, file = "data.clean.no.punct.Rda")
@@ -1685,13 +1666,12 @@ freq.million.the <- freq.million %>%
 save(freq.million, freq.million.and, freq.million.the, file = "freq.million.Rda")
 
 # 3rd Cleaning stopwords ----
-tokenised.no.punct.nsw <- anti_join(tokenised.no.punct ,stop)
+tokenised.no.punct.nsw <- anti_join(tokenised.no.punct, stop)
 save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
 
 # 4th Cleaning ----
 tokenised.punct <- tokenised.punct %>%
   mutate(words = str_replace_all(words, "approappropriation", "appropriation"),
-         # words = str_delete_all(words, "org"),
          words = str_replace_all(words, "approappropriations", "appropriations"),
          words = str_replace_all(words, "approapproriations", "appropriations"),
          words = str_replace_all(words, "adadministration", "administration"),
@@ -1982,7 +1962,6 @@ tokenised.punct <- tokenised.punct %>%
          words = str_replace_all(words, "chma", "china"),
          words = str_replace_all(words, "developmentand", "development and"),
          words = str_replace_all(words, "foodand", "food and"),
-         # words = str_replace_all(words, "nomirices", "nominees"),
          words = str_replace_all(words, "erice$", "ence"),
          words = str_replace_all(words, "erices$", "ences"),
          words = str_replace_all(words, "engiricering", "engineering"),
@@ -2028,7 +2007,9 @@ tokenised.punct <- tokenised.punct %>%
          words = str_replace_all(words, "\\bconsol\\b", "consolidation"),
          words = str_replace_all(words, "\\bcontribu\\b", "contribution"),
          words = str_replace_all(words, "renfection", "reinfection"),
-         words = str_replace_all(words, "\\bpsy\\schiatry", "psychiatry")) %>% 
+         words = str_replace_all(words, "\\bpsy\\schiatry", "psychiatry"),
+         words = str_replace_all(words, "nstitute", "institute"),
+         words = str_replace_all(words, "associationtion", "association")) %>%
   filter(!(words %in% c("tory", "tional", "tural", "ture", "cal", "medi", "na", 
                         "cul","©", "v", "f", "r", "p", "e", "t", "l", "m", "n", 
                         "b", "m.s", "na", "fe", "ab", "db", "appbopbu", 
@@ -2332,7 +2313,6 @@ tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
          words = str_replace_all(words, "developmentand", "development and"),
          words = str_replace_all(words, "foodand", "food and"),
          words = str_replace_all(words, "chma", "china"),
-         # words = str_replace_all(words, "nomirices", "nominees"),
          words = str_replace_all(words, "erice$", "ence"),
          words = str_replace_all(words, "erices$", "ences"),
          words = str_replace_all(words, "engiricering", "engineering"),
@@ -2378,7 +2358,9 @@ tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
          words = str_replace_all(words, "\\bconsol\\b", "consolidation"),
          words = str_replace_all(words, "\\bcontribu\\b", "contribution"),
          words = str_replace_all(words, "renfection", "reinfection"),
-         words = str_replace_all(words, "\\bpsy\\schiatry", "psychiatry")) %>% 
+         words = str_replace_all(words, "\\bpsy\\schiatry", "psychiatry"),
+         words = str_replace_all(words, "nstitute", "institute"),
+         words = str_replace_all(words, "associationtion", "association")) %>%
   filter(!(words %in% c("tory", "tional", "tural", "ture", "cal", "medi", "na", 
                         "cul","©", "v", "f", "r", "p", "e", "t", "l", "m", "n", 
                         "b", "m.s", "na", "fe", "ab", "db", "appbopbu", 
