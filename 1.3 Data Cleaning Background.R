@@ -1709,7 +1709,7 @@ tokenised.punct <- tokenised.punct %>%
                         "pp", "©rants", "mr", "mr.", "&m", "à", "—dr", "ip", 
                         "ooo", "ps", "da", "b.sc", ".ft", "a.", "sr.", "a.b.", 
                         "a.m.", "univ.", ".v.m", "xmv", "am", "cc", "du", "candi", 
-                        "jr", "iii", "illl", "iv"))
+                        "jr", "iii", "illl", "iv")))
 
 tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
   mutate(words = str_replace_all(words, "approappropriation", "appropriation"),
