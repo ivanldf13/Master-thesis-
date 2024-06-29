@@ -1232,7 +1232,6 @@ beep("ready")
 identical(data.clean.no.punct, data.clean.punct)
 all.equal(data.clean.no.punct$text, data.clean.punct$text)
 
-
 ## The best class to see elements within an object is tibble ----
 data.clean.no.punct <- tibble(data.clean.no.punct)
 save(data.clean.no.punct, file = "data.clean.no.punct.Rda")
@@ -2127,7 +2126,6 @@ table.per.year <- tokenised.no.punct.nsw %>%
   filter(n> 15) 
 
 save(table.per.year, file = "table.per.year.Rda")
-
 
 # TF-IDF ----
 testtf <- tokenised.no.punct.nsw %>% 

@@ -8,10 +8,10 @@ tic()
 load("dc.p.final.Rda")
 
 # Mandatory Step for the POS ----
-udpipe_download_model("english-ewt")
+# udpipe_download_model("english-ewt")
 
 plan(multisession, workers = 4) 
-
+seed_options <- furrr_options(seed = 123)
 pos.model <- udpipe_load_model("english-ewt-ud-2.5-191206.udpipe")
 # TODO Explain what pos.model is for
 
@@ -23,7 +23,8 @@ ftest <- function(text) {
   return(res)
 }
 
-# , model_dir = "~/Desktop/R Stuff/Master-thesis-"
+# just in case, for udipipe()
+
 # TODO try to save pos.model, load it 
 
 # POS tagging ----
@@ -39,16 +40,16 @@ POS.Rockefeller_tok_punct <- dc.p.final %>%
 
 save(POS.Rockefeller_tok_punct, file = "POS.Rockefeller_tok_punct.Rda")
 
-POS.Rockefeller_lemmatised_punct <- dc.p.final %>%
-  unnest_sentences("text", text) %>% 
-  mutate(text = str_squish(text)) %>%
-  mutate(tag = future_map(text, ftest)) %>%
-  unnest(tag) %>% 
-  group_by(Year) %>% 
-  count(lemma, upos) %>% 
-  ungroup() 
+# POS.Rockefeller_punct_lemmatised <- dc.p.final %>%
+#   unnest_sentences("text", text) %>% 
+#   mutate(text = str_squish(text)) %>%
+#   mutate(tag = future_map(text, ftest)) %>%
+#   unnest(tag) %>% 
+#   group_by(Year) %>% 
+#   count(lemma, upos) %>% 
+#   ungroup() 
 
-save(POS.Rockefeller_lemmatised_punct, file = "POS.Rockefeller_lemmatised_punct.Rda")
+# save(POS.Rockefeller_punct_lemmatised, file = "POS.Rockefeller_punct_lemmatised.Rda")
 
 # TODO If I use in the final version the lemma, bear in mind to mention it¡¡¡
 
@@ -62,26 +63,24 @@ POS.Rockefeller_tok_no_punct <- POS.Rockefeller_tok_punct %>%
 
 save(POS.Rockefeller_tok_no_punct, file = "POS.Rockefeller_tok_no_punct.Rda")
 
-
-# TODO wouldn't be better to do the filter with the file without the punctuation?
 # Selecting only the nouns
-POS.NOUNS <- POS.Rockefeller_tok_punct %>%
-  filter(upos == "NOUN") %>% 
-  select(-upos) %>% 
-  group_by(Year) %>% 
-  top_n(n = 500, n) %>% 
-  ungroup()
-
-save(POS.NOUNS, file = "POS.NOUNS.Rda")
+# POS.NOUNS <- POS.Rockefeller_tok_punct %>%
+#   filter(upos == "NOUN") %>% 
+#   select(-upos) %>% 
+#   group_by(Year) %>% 
+#   top_n(n = 500, n) %>% 
+#   ungroup()
+# 
+# save(POS.NOUNS, file = "POS.NOUNS.Rda")
 
 # Selecting nouns & verbs
-POS.NOUNS_VERBS <- POS.Rockefeller_tok_punct %>%
-  filter(upos %in% c("NOUN", "VERB")) %>% 
-  select(-upos) %>% 
-  group_by(Year) %>% 
-  top_n(n = 500, n) %>% 
-  ungroup()
-
-save(POS.NOUNS_VERBS, file = "POS.NOUNS_VERBS.Rda")
+# POS.NOUNS <- POS.Rockefeller_tok_punct %>%
+#   filter(upos %in% c("NOUN", "VERB")) %>% 
+#   select(-upos) %>% 
+#   group_by(Year) %>% 
+#   top_n(n = 500, n) %>% 
+#   ungroup()
+# 
+# save(POS.NOUNS_VERBS, file = "POS.NOUNS_VERBS.Rda")
 
 toc()

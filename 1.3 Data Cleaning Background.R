@@ -3,247 +3,83 @@
 
 # Loading useful packages ----
 library(pacman)
-p_load(dplyr, ggplot2, quanteda, readtext, knitr, stringr, tidyr, tidytext, beepr)
+p_load(dplyr, ggplot2, quanteda, readtext, knitr, stringr, tidyr, tidytext, beepr, tictoc)
 
+tic()
 
 # Retrieving and reading the documents to be used ----
 Corpus <- readtext("./AR.TXT/*.pdf") 
 
-# load("Corpus.Rda")
+# load("Corpus.Rda") # to be used when the Corpus object has already created and reducte the time.
 
 # Create the Stopwords (ENG) objects ----
 stop <- tibble(words = stopwords::data_stopwords_stopwordsiso$en)
 
-# Changing the type of variable for doc_id
+# Changing the name of variable for doc_id
 Corpus <- Corpus %>% 
   mutate(Year = str_match(string = doc_id, "\\d{4}"),
          Year = as.numeric(Year)) %>% 
   select(-doc_id)
 
 # Cleaning the most salient things to erase, unless punctuation ----
-# data.clean.(no.punct/punct) is the file before the unnest function (one text per line), with the 1st layer of
+# data.clean.(no.punct/punct) is the file before the unnest function (one text per row), with the 1st layer of
 # cleaning (words wrongly written) & lower cases
 
 ## Cleaning and creating the data with NO punctuation ----
 data.clean.no.punct <- Corpus  %>% 
-  mutate(text = str_replace_all(text, "\\n", " "),
-         text = str_remove_all(text, "[:punct:]"),
-         text = str_remove_all(text, "[:digit:]"),
-         text = str_remove_all(text, "_+"),
-         text = str_remove_all(text, "(\\$|\\~|c~|\\^|\\£|\\^|<>|<|>|¯|>>|⇒|→|>oo|\\boo\\b|°|±|™|\\+|\\-|\\¥|\\■|\\|)\\w?"),
-         text = tolower(text),
+  mutate(text = str_replace_all(text, "\\n", " "), # every jump of line (in the text) is replaced by a space
+         text = str_remove_all(text, "[:punct:]"), # removes every punctuation character
+         text = str_remove_all(text, "[:digit:]"), # removes digits
+         text = str_remove_all(text, "_+"), # removes underscores 
+         text = str_remove_all(text, "(\\$|\\~|c~|\\^|\\£|\\^|<>|<|>|¯|>>|⇒|→|>oo|\\boo\\b|°|±|™|\\+|\\-|\\¥|\\■|\\|)\\w?"), # removes specific symbols and patterns
+         text = tolower(text), # converts uppercases to lowercases
          text = str_replace_all(text, "wellbeing", "well-being"),
          text = str_remove_all(text,"\\bwe the rockefeller foundation\\b"),
          text = str_remove_all(text,"wwwrockfoundorg"),
          text = str_remove_all(text,"wwwrockefeller"),
          text = str_replace_all(text, "erice(s)?\\b", "ence\\1"),
          text = str_replace_all(text, "univer\\s*(.|usa)?\\s*sity", "university"),
-         # text = str_replace_all(text, "zationseffort", "zations effort"),
          text = str_replace_all(text, "\\b(organi|moderni)\\s+(.|usa)?\\s+zation", "\\1zation"),
-         # text = str_replace_all(text, "moderni zation", "modernization"),
-         # text = str_replace_all(text, "organi zations", "organizations"),
-         # text = str_replace_all(text, "organi usa zation", "organization"),
          text = str_replace_all(text, "appropria(\\s|\\t|\\n)+tions", "appropriations"),
-         # text = str_replace_all(text, "appro[:space:]priations", "appropriations"),
-         # text = str_replace_all(text, "appro\\n{1,5}priations", "appropriations"),
-         text = str_replace_all(text, "\\b(ac|ag|aq)\\spriations", "\\1priations"), 
-         # text = str_replace_all(text, "ag priations", "appropriations"), 
-         # text = str_replace_all(text, "aq priations", "appropriations"), 
+         text = str_replace_all(text, "\\b(ac|ag|aq)\\spriations", "\\1priations"),
          text = str_remove_all(text, "\\brockefeller foundation\\b"),
-         # text = str_replace_all(text, "paulodepart", "paulo depart"),
-         # text = str_replace_all(text, "researchdepart", "research depart"),
          text = str_replace_all(text, "\\b(adjust|equip)\\s\\b[pjo]\\b", "\\1"),
-         # text = str_replace_all(text, "equip p", "equip"),
-         # text = str_replace_all(text, "equip j", "equip"),
-         # text = str_replace_all(text, "equip o", "equip"),
-         # text = str_replace_all(text, "depart o", "depart"),
-         # text = str_replace_all(text, "depart j", "depart"),
          text = str_replace_all(text, "nonallgn", "non alligned"),
-         text = str_replace_all(text, "(govern|depart|treat|equip|develop|require|move|impove|endow|employ|install|agree|establish|disburse|adjust|supple|experi|settle|pay|invest|ele|achieve|commit|appoint|docu|arrange|assign)\\sment", "\\1ment"),
+         text = str_replace_all(text, "(govern|depart|treat|equip|develop|require|move|impove|endow|employ|install|agree|
+         establish|disburse|adjust|supple|experi|settle|pay|invest|ele|achieve|commit|appoint|docu|arrange|assign)\\sment", "\\1ment"),
          text = str_replace_all(text, "\\b([a-z]{1,12})\\s\\bment(s?)\\b", "\\1ment\\2"),
          text = str_replace_all(text, "devel\\sopment", "development"),
          text = str_replace_all(text, "de\\svelopment", "development"),
          text = str_replace_all(text, " depart\\sments", "departments"),
-         # text = str_replace_all(text, "depart ment","department"), 
-         # text = str_replace_all(text, "treat ments","treatments"),
-         # text = str_replace_all(text, "equip ment","equipment"),
-         # text = str_replace_all(text, "develop ment","development"),
-         # text = str_replace_all(text, "require ment","requirement"),
-         # text = str_replace_all(text, "move ment","movement"),
-         # text = str_replace_all(text, "improve ment","improvement"),
-         # text = str_replace_all(text, "endow ment","endowment"),
-         # text = str_replace_all(text, "employ ment","employment"),
-         # text = str_replace_all(text, "install ment","installment"),
-         # text = str_replace_all(text, "agree ment","agreement"),
-         # text = str_replace_all(text, "establish ment","establisment"),
-         # text = str_replace_all(text, "disburse ment","disbursement"),
-         # text = str_replace_all(text, "adjust ment","adjustment"),
-         # text = str_replace_all(text, "supple ment","supplement"),
-         # text = str_replace_all(text, "experi ment","experiment"),
-         # text = str_replace_all(text, "settle ment","settlement"),
-         # text = str_replace_all(text, "pay ment","payment"),
-         # text = str_replace_all(text, "invest ment","investment"),
-         # text = str_replace_all(text, "ele ment","element"),
-         # text = str_replace_all(text, "achieve ment","achievement"),
-         # text = str_replace_all(text, "commit ment","commitment"),
-         # text = str_replace_all(text, "appoint ment","appointment"),
-         # text = str_replace_all(text, "docu ment","document"),
-         # text = str_replace_all(text, "arrange ment","arragement"),
-         # text = str_replace_all(text, " assign ment","assignement"),
          text = str_replace_all(text, "\\b([a-z]{0,9})\\s\\bcation(s?)\\b", "\\1cation\\2"),
          text = str_replace_all(text, "telecommun", "telecommuni"),
-         # text = str_replace_all(text, "education cation","education"),
-         # text = str_replace_all(text, "communi cation","communication"),
-         # text = str_replace_all(text, "appli cation","application"),
-         # text = str_replace_all(text, "classifi cation","classification"),
-         # text = str_replace_all(text, "publi cation","publication"),
-         # text = str_replace_all(text, "telecommuni cation", "telecommunication"),
-         # text = str_replace_all(text, "qualifi cation", "qualification"),
-         # text = str_replace_all(text, "communi cation", "communication"),
-         # text = str_replace_all(text, "emergedthe", "emerged the"),
-         # text = str_replace_all(text, "worldpopu", "world popu"),
          text = str_replace_all(text, "\\b([a-z]{1,10})\\slation(s?)", "\\1lation\\2"),
-         # text = str_replace_all(text, "popu lation", "population"),
-         # text = str_replace_all(text, "overpopu lation", "overpopulation"),
-         # text = str_replace_all(text, "trans lation", "translation"),
-         # text = str_replace_all(text, "re lation", "relation"),
-         # text = str_replace_all(text, "inocu lation", "inoculation"),
-         # text = str_replace_all(text, "iso lation", "isolation"),
-         # text = str_replace_all(text, "specu lation", "speculation"),
          text = str_replace_all(text, "foun\\sdation", "foundation"),
          text = str_replace_all(text, "accomo\\sdation", "accomodation"),
          text = str_replace_all(text, "comis\\sj", "comis"),
          text = str_replace_all(text, "([a-z]{2,9})\\ssion(s?)", "\\1ssion\\2"),
-         # text = str_replace_all(text, "commis sion", "commission"),
-         # text = str_replace_all(text, "promis sion", "promission"),
-         # text = str_replace_all(text, "mis sion", "mission"),
          text = str_replace_all(text, "([a-z]{2,12})\\sion(s?)", "\\1sion\\2"),
-         # text = str_replace_all(text, "comprehen sion", "comprehension"),
-         # text = str_replace_all(text, "deci sion", "decision"),
-         # text = str_replace_all(text, "divi sion", "division"),
-         # text = str_replace_all(text, "profe sion", "profesion"),
-         # text = str_replace_all(text, "man sion", "mansion"),
-         # text = str_replace_all(text, "supervi sion", "supervision"),
-         # text = str_replace_all(text, "provi sion", "provision"),
-         # text = str_replace_all(text, "mis sions", "missions"),
-         # text = str_replace_all(text, "pen sions", "pensions"),
-         # text = str_replace_all(text, "exten sions", "extensions"),
-         # text = str_replace_all(text, "discu sions", "discusions"),
          text = str_replace_all(text, "foun\\s(a|i)", "foun"),
-         # text = str_replace_all(text, "foun i", "foun"),
          text = str_replace_all(text, "con\\struction", "construction"),
-         # text = str_replace_all(text, "recon struction", "reconstruction"),
          text = str_replace_all(text, "oo struction", "construction"),
          text = str_replace_all(text, "indebted\\s(a|k)", "indebted"),
-         # text = str_replace_all(text, "inthe", "in the"),
-         # text = str_replace_all(text, "indebted a", "indebted"),
-         # text = str_replace_all(text, "indebted k", "indebted"),
          text = str_replace_all(text, "([a-z]{0,11})\\s\\bness(e?s?)\\b", "\\1ness\\2"), 
          text = str_replace_all(text, "feebleminded ness", "feeblemindedness"),
-         # text = str_replace_all(text, "andinterrelated", "and interrelated"),
-         # text = str_replace_all(text, "readi ness", "readiness"),
-         # text = str_replace_all(text, "dizi ness", "diziness"),
-         # text = str_replace_all(text, "blind ness", "blindness"),
-         # text = str_replace_all(text, "sick ness", "sickness"),
-         # text = str_replace_all(text, "busi ness", "business"),
-         # text = str_replace_all(text, "sensitive ness", "sensitiveness"),
-         # text = str_replace_all(text, "indebted ness", "indebtedness"),
-         # text = str_replace_all(text, "feebleminded ness", "feeblemindedness"),
-         # text = str_replace_all(text, "effective ness", "effectiveness"),
-         # text = str_replace_all(text, "poor ness", "poorness"),
-         # text = str_replace_all(text, "interrelated ness", "interrelatedness"),
-         # text = str_replace_all(text, "care ness", "careness"),
-         # text = str_replace_all(text, "aware ness", "awareness"),
-         # text = str_replace_all(text, "weak nesses", "weaknesses"),
-         # text = str_replace_all(text, "internship nesses", "internshipnesses"),
          text = str_replace_all(text, "\\bcom\\sq", "com"),
          text = str_replace_all(text, "\\bcom\\smunit(y|ies)", "communit\\1"),
-         # text = str_replace_all(text, "com munity", "community"),
-         # text = str_replace_all(text, "com munities", "communities"),
          text = str_replace_all(text, "im\\smunity", "immunity"),
          text = str_replace_all(text, "corpo\\s~", "corpo"),
-         
-         text = str_replace_all(text, "\\b([a-z]{0,9})\\s\\bration(s?)\\b", "\\1ration\\2"), 
-         # text = str_replace_all(text, "corpo ration", "corporation"),
-         # text = str_replace_all(text, "prepa ration", "preparation"),
-         # text = str_replace_all(text, "explo ration", "exploration"),
+         text = str_replace_all(text, "\\b([a-z]{0,9})\\s\\bration(s?)\\b", "\\1ration\\2"),
          text = str_replace_all(text, "\\badminis\\s>\\sj", "adminis"),
-         
          text = str_replace_all(text, "\\b([a-z]{2,9})\\s\\btration(s?)\\b", "\\1tration\\2"),
-         # text = str_replace_all(text, "adminis tration", "administration"),
-         # text = str_replace_all(text, "concen tration", "concentration"),
-         # text = str_replace_all(text, "concen trations", "concentrations"),
-         # text = str_replace_all(text, "regis tration", "registration"),
-         
          text = str_replace_all(text, "([a-z]{2,10})\\s\\btional(s?)\\b", "\\1tional\\2"),
-         # text = str_replace_all(text, "interna tional", "international"),
-         # text = str_replace_all(text, "addi tional", "additional"),
          text = str_replace_all(text, "\\b([a-z]{2,10})\\s\\btural(s?)\\b", "\\1tural\\2"),
-         # text = str_replace_all(text, "agricul tural", "agricultural"),
-         # text = str_replace_all(text, "cul tural", "cultural"),
-         # text = str_replace_all(text, "culnj tural", "cultural"),
-         # text = str_replace_all(text, "struc tural", "structural"),
          text = str_replace_all(text, "\\b([a-z]{1,11})\\s\\bation(s?)\\b", "\\1ation\\2"),
-         # text = str_replace_all(text, "situ ation", "situation"),
-         # text = str_replace_all(text, "consider ation", "consideration"),
-         # text = str_replace_all(text, "consider ations", "considerations"),
-         # text = str_replace_all(text, "appropi ation", "appropriation"),
-         # text = str_replace_all(text, "demobiliz ation", "demobilization"),
-         # text = str_replace_all(text, "associ ation", "association"),
-         # text = str_replace_all(text, "found ation", "foundation"),
-         # text = str_replace_all(text, "cooper ation", "cooperation"),
-         # text = str_replace_all(text, "programm ation", "programmation"),
-         # text = str_replace_all(text, "oper ation", "operation"),
-         # text = str_replace_all(text, "oper ations", "operations"),
-         # text = str_replace_all(text, "radi ation", "radiation"),
-         # text = str_replace_all(text, "cre ation", "creaation"),
-         # text = str_replace_all(text, "tax ation", "taxation"),
-         # text = str_replace_all(text, "feder ation", "federation"),
-         # text = str_replace_all(text, "fund ations", "fundations"),
-         
          text = str_replace_all(text, "\\b([a-z]{1,10})\\s\\btation(s?)\\b", "\\1tation\\2"),
-         # text = str_replace_all(text, "limi tation", "limitation"),
-         # text = str_replace_all(text, "sani tation", "sanitation"),
-         # text = str_replace_all(text, "vege tation", "vegetation"),
-         # text = str_replace_all(text, "infes tation", "infestation"),
-         # text = str_replace_all(text, "documen tation", "documentation"),
-         # text = str_replace_all(text, "compu tation", "computation"),
-         # text = str_replace_all(text, "compu tations", "computations"),
-         # text = str_replace_all(text, "transpor tation", "transportation"),
-         # text = str_replace_all(text, "interpre tation", "interpretation"),
-         # text = str_replace_all(text, "rehabili tation", "rehabilitation"),
          text = str_replace_all(text, "\\b([a-z]{2,12})\\s\\btion(s?)\\b", "\\1tion\\2"),
-         # text = str_replace_all(text, "investiga tion", "investigation"),
-         # text = str_replace_all(text, "investiga tions", "investigations"),
-         
          text = str_replace_all(text, "\\b([a-z]{1,13})\\s\\bit(y|ies)\\b", "\\1it\\2"),
-         # text = str_replace_all(text, "captiv ity", "captivity"),
-         # text = str_replace_all(text, "qual ity", "quality"),
-         # text = str_replace_all(text, "activ ity", "activity"),
-         # text = str_replace_all(text, "commun ity", "community"),
-         # text = str_replace_all(text, "calam ity", "calamity"),
-         # text = str_replace_all(text, "hered ity", "heredity"),
-         # text = str_replace_all(text, "produc ity", "productvity"),
-         # text = str_replace_all(text, "valid ity", "validity"),
-         # text = str_replace_all(text, "qual ity", "quality"),
-         # text = str_replace_all(text, "valid ity", "validity"),
-         # text = str_replace_all(text, "objectiv ity", "objectivity"),
-         # text = str_replace_all(text, "fertil ity", "fertility"),
-         # text = str_replace_all(text, "facil ity", "facility"),
-         # text = str_replace_all(text, "insular ity", "insularity"),
-         # text = str_replace_all(text, "univers ity", "university"),
-         # text = str_replace_all(text, "environmental ity", "environmentality"),
-         
          text = str_replace_all(text, "([a-z]{1,12})\\s\\bence(s?)\\b", "\\1ence\\2"),
-         # text = str_replace_all(text, "sci ence", "science"),
-         # text = str_replace_all(text, "influ ence", "influence"),
-         # text = str_replace_all(text, "confe rence", "conference"),
-         # text = str_replace_all(text, "refer ence", "reference"),
-         # text = str_replace_all(text, "independ ence", "independence"),
-         # text = str_replace_all(text, "refer ence", "reference"),
-         
          text = str_replace_all(text, "\\b([a-z]{2,11})\\s\\btive(s?)\\b", "\\1tive\\2"),
-         
          text = str_replace_all(text, "attenu ated", "attenuated"),
          text = str_replace_all(text, "\\boper ated", "operated"),
          text = str_replace_all(text, "appropri ated", "appropriated"),
@@ -256,7 +92,6 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "cooper ated", "cooperated"),
          text = str_replace_all(text, "unaffili", "unaffiliated"),
          text = str_replace_all(text, "exagger ated", "exaggerated"),
-         
          text = str_replace_all(text, "jniver ~", "univers"),
          text = str_replace_all(text, "ca lamities", "calamities"),
          text = str_replace_all(text, "accaountantfacil", "accaountant facil "),
@@ -286,7 +121,6 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "ccommunities", "communities"),
          text = str_replace_all(text, "certifi cates", "certificates"),
          text = str_replace_all(text, "cer tificates", "certificates"),
-         
          text = str_replace_all(text, "theadvancement", "the advancement"),
          text = str_replace_all(text, "thedevelopment", "the development"),
          text = str_replace_all(text, "thedivision", "the division"),
@@ -345,7 +179,6 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "thecalifornia", "the california"),
          text = str_replace_all(text, "thestate", "the state"),
          text = str_replace_all(text, "theothers", "the others"),
-         
          text = str_replace_all(text, "andequipment", "and equipment"),
          text = str_replace_all(text, "andtreatment", "and treatment"),
          text = str_replace_all(text, "andgovernment", "and government"),
@@ -731,7 +564,6 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "annualreport", "annual-report"),
          text = str_replace_all(text, "\\bartis ans", "artisans"),
          text = str_replace_all(text, "\\bartis anal", "artisanal"),
-         # text = str_replace_all(text, "\\bagricul", "agriculture"),
          text = str_replace_all(text, "\\bagron omy", "agronomy"),
          text = str_replace_all(text, "\\bagron\\b", "agronomy"),
          text = str_replace_all(text, "\\brresearch", "research"),
@@ -788,228 +620,69 @@ data.clean.no.punct <- Corpus  %>%
          text = str_replace_all(text, "\\bmem\\sber(s)?", "member\\1"),
          text = str_replace_all(text, "resuits", "results"),
          text = str_replace_all(text, "centrol", "central"),
-         text = str_replace_all(text, "ofthel", "of the"))
+         text = str_replace_all(text, "ofthe", "of the"),
+         text = str_replace_all(text, "thefirstsummers", "the first summers"),
+         text = str_replace_all(text, "ofbiotechnology", "of biotechnology"),
+         text = str_replace_all(text, "sorghummillet", "sorghum millet"),
+         text = str_replace_all(text, "andjgenetics", "and genetics"),
+         text = str_replace_all(text, "culturalpesticide", "cultural pesticide"))
 
+beep("ready")
 
 ## Cleaning and creating the data with punctuation ---- 
 data.clean.punct <- Corpus  %>% 
   mutate(text = str_replace_all(text, "\\n", " "),
-         text = str_remove_all(text, "[:digit:]"),
-         text = str_remove_all(text, "_+"),
-         text = str_remove_all(text, "(\\$|\\~|c~|\\^|\\£|\\^|<>|<|>|¯|>>|⇒|→|>oo|\\boo\\b|°|±|™|\\+|\\-|\\¥|\\■|\\|)\\w?"),
-         text = tolower(text),
+         text = str_remove_all(text, "[:digit:]"), # removes digits
+         text = str_remove_all(text, "_+"), # removes underscores 
+         text = str_remove_all(text, "(\\$|\\~|c~|\\^|\\£|\\^|<>|<|>|¯|>>|⇒|→|>oo|\\boo\\b|°|±|™|\\+|\\-|\\¥|\\■|\\|)\\w?"), # removes specific symbols and patterns
+         text = tolower(text), # converts uppercases to lowercases
          text = str_replace_all(text, "wellbeing", "well-being"),
          text = str_remove_all(text,"\\bwe the rockefeller foundation\\b"),
          text = str_remove_all(text,"wwwrockfoundorg"),
          text = str_remove_all(text,"wwwrockefeller"),
          text = str_replace_all(text, "erice(s)?\\b", "ence\\1"),
          text = str_replace_all(text, "univer\\s*(.|usa)?\\s*sity", "university"),
-         # text = str_replace_all(text, "zationseffort", "zations effort"),
          text = str_replace_all(text, "\\b(organi|moderni)\\s+(.|usa)?\\s+zation", "\\1zation"),
-         # text = str_replace_all(text, "moderni zation", "modernization"),
-         # text = str_replace_all(text, "organi zations", "organizations"),
-         # text = str_replace_all(text, "organi usa zation", "organization"),
          text = str_replace_all(text, "appropria(\\s|\\t|\\n)+tions", "appropriations"),
-         # text = str_replace_all(text, "appro[:space:]priations", "appropriations"),
-         # text = str_replace_all(text, "appro\\n{1,5}priations", "appropriations"),
-         text = str_replace_all(text, "\\b(ac|ag|aq)\\spriations", "\\1priations"), 
-         # text = str_replace_all(text, "ag priations", "appropriations"), 
-         # text = str_replace_all(text, "aq priations", "appropriations"), 
+         text = str_replace_all(text, "\\b(ac|ag|aq)\\spriations", "\\1priations"),
          text = str_remove_all(text, "\\brockefeller foundation\\b"),
-         # text = str_replace_all(text, "paulodepart", "paulo depart"),
-         # text = str_replace_all(text, "researchdepart", "research depart"),
          text = str_replace_all(text, "\\b(adjust|equip)\\s\\b[pjo]\\b", "\\1"),
-         # text = str_replace_all(text, "equip p", "equip"),
-         # text = str_replace_all(text, "equip j", "equip"),
-         # text = str_replace_all(text, "equip o", "equip"),
-         # text = str_replace_all(text, "depart o", "depart"),
-         # text = str_replace_all(text, "depart j", "depart"),
          text = str_replace_all(text, "nonallgn", "non alligned"),
-         text = str_replace_all(text, "(govern|depart|treat|equip|develop|require|move|impove|endow|employ|install|agree|establish|disburse|adjust|supple|experi|settle|pay|invest|ele|achieve|commit|appoint|docu|arrange|assign)\\sment", "\\1ment"),
+         text = str_replace_all(text, "(govern|depart|treat|equip|develop|require|move|impove|endow|employ|install|agree|
+         establish|disburse|adjust|supple|experi|settle|pay|invest|ele|achieve|commit|appoint|docu|arrange|assign)\\sment", "\\1ment"),
          text = str_replace_all(text, "\\b([a-z]{1,12})\\s\\bment(s?)\\b", "\\1ment\\2"),
          text = str_replace_all(text, "devel\\sopment", "development"),
          text = str_replace_all(text, "de\\svelopment", "development"),
          text = str_replace_all(text, " depart\\sments", "departments"),
-         # text = str_replace_all(text, "depart ment","department"), 
-         # text = str_replace_all(text, "treat ments","treatments"),
-         # text = str_replace_all(text, "equip ment","equipment"),
-         # text = str_replace_all(text, "develop ment","development"),
-         # text = str_replace_all(text, "require ment","requirement"),
-         # text = str_replace_all(text, "move ment","movement"),
-         # text = str_replace_all(text, "improve ment","improvement"),
-         # text = str_replace_all(text, "endow ment","endowment"),
-         # text = str_replace_all(text, "employ ment","employment"),
-         # text = str_replace_all(text, "install ment","installment"),
-         # text = str_replace_all(text, "agree ment","agreement"),
-         # text = str_replace_all(text, "establish ment","establisment"),
-         # text = str_replace_all(text, "disburse ment","disbursement"),
-         # text = str_replace_all(text, "adjust ment","adjustment"),
-         # text = str_replace_all(text, "supple ment","supplement"),
-         # text = str_replace_all(text, "experi ment","experiment"),
-         # text = str_replace_all(text, "settle ment","settlement"),
-         # text = str_replace_all(text, "pay ment","payment"),
-         # text = str_replace_all(text, "invest ment","investment"),
-         # text = str_replace_all(text, "ele ment","element"),
-         # text = str_replace_all(text, "achieve ment","achievement"),
-         # text = str_replace_all(text, "commit ment","commitment"),
-         # text = str_replace_all(text, "appoint ment","appointment"),
-         # text = str_replace_all(text, "docu ment","document"),
-         # text = str_replace_all(text, "arrange ment","arragement"),
-         # text = str_replace_all(text, " assign ment","assignement"),
          text = str_replace_all(text, "\\b([a-z]{0,9})\\s\\bcation(s?)\\b", "\\1cation\\2"),
          text = str_replace_all(text, "telecommun", "telecommuni"),
-         # text = str_replace_all(text, "education cation","education"),
-         # text = str_replace_all(text, "communi cation","communication"),
-         # text = str_replace_all(text, "appli cation","application"),
-         # text = str_replace_all(text, "classifi cation","classification"),
-         # text = str_replace_all(text, "publi cation","publication"),
-         # text = str_replace_all(text, "telecommuni cation", "telecommunication"),
-         # text = str_replace_all(text, "qualifi cation", "qualification"),
-         # text = str_replace_all(text, "communi cation", "communication"),
-         # text = str_replace_all(text, "emergedthe", "emerged the"),
-         # text = str_replace_all(text, "worldpopu", "world popu"),
          text = str_replace_all(text, "\\b([a-z]{1,10})\\slation(s?)", "\\1lation\\2"),
-         # text = str_replace_all(text, "popu lation", "population"),
-         # text = str_replace_all(text, "overpopu lation", "overpopulation"),
-         # text = str_replace_all(text, "trans lation", "translation"),
-         # text = str_replace_all(text, "re lation", "relation"),
-         # text = str_replace_all(text, "inocu lation", "inoculation"),
-         # text = str_replace_all(text, "iso lation", "isolation"),
-         # text = str_replace_all(text, "specu lation", "speculation"),
          text = str_replace_all(text, "foun\\sdation", "foundation"),
          text = str_replace_all(text, "accomo\\sdation", "accomodation"),
          text = str_replace_all(text, "comis\\sj", "comis"),
          text = str_replace_all(text, "([a-z]{2,9})\\ssion(s?)", "\\1ssion\\2"),
-         # text = str_replace_all(text, "commis sion", "commission"),
-         # text = str_replace_all(text, "promis sion", "promission"),
-         # text = str_replace_all(text, "mis sion", "mission"),
          text = str_replace_all(text, "([a-z]{2,12})\\sion(s?)", "\\1sion\\2"),
-         # text = str_replace_all(text, "comprehen sion", "comprehension"),
-         # text = str_replace_all(text, "deci sion", "decision"),
-         # text = str_replace_all(text, "divi sion", "division"),
-         # text = str_replace_all(text, "profe sion", "profesion"),
-         # text = str_replace_all(text, "man sion", "mansion"),
-         # text = str_replace_all(text, "supervi sion", "supervision"),
-         # text = str_replace_all(text, "provi sion", "provision"),
-         # text = str_replace_all(text, "mis sions", "missions"),
-         # text = str_replace_all(text, "pen sions", "pensions"),
-         # text = str_replace_all(text, "exten sions", "extensions"),
-         # text = str_replace_all(text, "discu sions", "discusions"),
          text = str_replace_all(text, "foun\\s(a|i)", "foun"),
-         # text = str_replace_all(text, "foun i", "foun"),
          text = str_replace_all(text, "con\\struction", "construction"),
-         # text = str_replace_all(text, "recon struction", "reconstruction"),
          text = str_replace_all(text, "oo struction", "construction"),
          text = str_replace_all(text, "indebted\\s(a|k)", "indebted"),
-         # text = str_replace_all(text, "inthe", "in the"),
-         # text = str_replace_all(text, "indebted a", "indebted"),
-         # text = str_replace_all(text, "indebted k", "indebted"),
          text = str_replace_all(text, "([a-z]{0,11})\\s\\bness(e?s?)\\b", "\\1ness\\2"), 
          text = str_replace_all(text, "feebleminded ness", "feeblemindedness"),
-         # text = str_replace_all(text, "andinterrelated", "and interrelated"),
-         # text = str_replace_all(text, "readi ness", "readiness"),
-         # text = str_replace_all(text, "dizi ness", "diziness"),
-         # text = str_replace_all(text, "blind ness", "blindness"),
-         # text = str_replace_all(text, "sick ness", "sickness"),
-         # text = str_replace_all(text, "busi ness", "business"),
-         # text = str_replace_all(text, "sensitive ness", "sensitiveness"),
-         # text = str_replace_all(text, "indebted ness", "indebtedness"),
-         # text = str_replace_all(text, "feebleminded ness", "feeblemindedness"),
-         # text = str_replace_all(text, "effective ness", "effectiveness"),
-         # text = str_replace_all(text, "poor ness", "poorness"),
-         # text = str_replace_all(text, "interrelated ness", "interrelatedness"),
-         # text = str_replace_all(text, "care ness", "careness"),
-         # text = str_replace_all(text, "aware ness", "awareness"),
-         # text = str_replace_all(text, "weak nesses", "weaknesses"),
-         # text = str_replace_all(text, "internship nesses", "internshipnesses"),
          text = str_replace_all(text, "\\bcom\\sq", "com"),
          text = str_replace_all(text, "\\bcom\\smunit(y|ies)", "communit\\1"),
-         # text = str_replace_all(text, "com munity", "community"),
-         # text = str_replace_all(text, "com munities", "communities"),
          text = str_replace_all(text, "im\\smunity", "immunity"),
          text = str_replace_all(text, "corpo\\s~", "corpo"),
-         
-         text = str_replace_all(text, "\\b([a-z]{0,9})\\s\\bration(s?)\\b", "\\1ration\\2"), 
-         # text = str_replace_all(text, "corpo ration", "corporation"),
-         # text = str_replace_all(text, "prepa ration", "preparation"),
-         # text = str_replace_all(text, "explo ration", "exploration"),
+         text = str_replace_all(text, "\\b([a-z]{0,9})\\s\\bration(s?)\\b", "\\1ration\\2"),
          text = str_replace_all(text, "\\badminis\\s>\\sj", "adminis"),
-         
          text = str_replace_all(text, "\\b([a-z]{2,9})\\s\\btration(s?)\\b", "\\1tration\\2"),
-         # text = str_replace_all(text, "adminis tration", "administration"),
-         # text = str_replace_all(text, "concen tration", "concentration"),
-         # text = str_replace_all(text, "concen trations", "concentrations"),
-         # text = str_replace_all(text, "regis tration", "registration"),
-         
          text = str_replace_all(text, "([a-z]{2,10})\\s\\btional(s?)\\b", "\\1tional\\2"),
-         # text = str_replace_all(text, "interna tional", "international"),
-         # text = str_replace_all(text, "addi tional", "additional"),
          text = str_replace_all(text, "\\b([a-z]{2,10})\\s\\btural(s?)\\b", "\\1tural\\2"),
-         # text = str_replace_all(text, "agricul tural", "agricultural"),
-         # text = str_replace_all(text, "cul tural", "cultural"),
-         # text = str_replace_all(text, "culnj tural", "cultural"),
-         # text = str_replace_all(text, "struc tural", "structural"),
          text = str_replace_all(text, "\\b([a-z]{1,11})\\s\\bation(s?)\\b", "\\1ation\\2"),
-         # text = str_replace_all(text, "situ ation", "situation"),
-         # text = str_replace_all(text, "consider ation", "consideration"),
-         # text = str_replace_all(text, "consider ations", "considerations"),
-         # text = str_replace_all(text, "appropi ation", "appropriation"),
-         # text = str_replace_all(text, "demobiliz ation", "demobilization"),
-         # text = str_replace_all(text, "associ ation", "association"),
-         # text = str_replace_all(text, "found ation", "foundation"),
-         # text = str_replace_all(text, "cooper ation", "cooperation"),
-         # text = str_replace_all(text, "programm ation", "programmation"),
-         # text = str_replace_all(text, "oper ation", "operation"),
-         # text = str_replace_all(text, "oper ations", "operations"),
-         # text = str_replace_all(text, "radi ation", "radiation"),
-         # text = str_replace_all(text, "cre ation", "creaation"),
-         # text = str_replace_all(text, "tax ation", "taxation"),
-         # text = str_replace_all(text, "feder ation", "federation"),
-         # text = str_replace_all(text, "fund ations", "fundations"),
-         
          text = str_replace_all(text, "\\b([a-z]{1,10})\\s\\btation(s?)\\b", "\\1tation\\2"),
-         # text = str_replace_all(text, "limi tation", "limitation"),
-         # text = str_replace_all(text, "sani tation", "sanitation"),
-         # text = str_replace_all(text, "vege tation", "vegetation"),
-         # text = str_replace_all(text, "infes tation", "infestation"),
-         # text = str_replace_all(text, "documen tation", "documentation"),
-         # text = str_replace_all(text, "compu tation", "computation"),
-         # text = str_replace_all(text, "compu tations", "computations"),
-         # text = str_replace_all(text, "transpor tation", "transportation"),
-         # text = str_replace_all(text, "interpre tation", "interpretation"),
-         # text = str_replace_all(text, "rehabili tation", "rehabilitation"),
          text = str_replace_all(text, "\\b([a-z]{2,12})\\s\\btion(s?)\\b", "\\1tion\\2"),
-         # text = str_replace_all(text, "investiga tion", "investigation"),
-         # text = str_replace_all(text, "investiga tions", "investigations"),
-         
          text = str_replace_all(text, "\\b([a-z]{1,13})\\s\\bit(y|ies)\\b", "\\1it\\2"),
-         # text = str_replace_all(text, "captiv ity", "captivity"),
-         # text = str_replace_all(text, "qual ity", "quality"),
-         # text = str_replace_all(text, "activ ity", "activity"),
-         # text = str_replace_all(text, "commun ity", "community"),
-         # text = str_replace_all(text, "calam ity", "calamity"),
-         # text = str_replace_all(text, "hered ity", "heredity"),
-         # text = str_replace_all(text, "produc ity", "productvity"),
-         # text = str_replace_all(text, "valid ity", "validity"),
-         # text = str_replace_all(text, "qual ity", "quality"),
-         # text = str_replace_all(text, "valid ity", "validity"),
-         # text = str_replace_all(text, "objectiv ity", "objectivity"),
-         # text = str_replace_all(text, "fertil ity", "fertility"),
-         # text = str_replace_all(text, "facil ity", "facility"),
-         # text = str_replace_all(text, "insular ity", "insularity"),
-         # text = str_replace_all(text, "univers ity", "university"),
-         # text = str_replace_all(text, "environmental ity", "environmentality"),
-         
          text = str_replace_all(text, "([a-z]{1,12})\\s\\bence(s?)\\b", "\\1ence\\2"),
-         # text = str_replace_all(text, "sci ence", "science"),
-         # text = str_replace_all(text, "influ ence", "influence"),
-         # text = str_replace_all(text, "confe rence", "conference"),
-         # text = str_replace_all(text, "refer ence", "reference"),
-         # text = str_replace_all(text, "independ ence", "independence"),
-         # text = str_replace_all(text, "refer ence", "reference"),
-         
          text = str_replace_all(text, "\\b([a-z]{2,11})\\s\\btive(s?)\\b", "\\1tive\\2"),
-         
          text = str_replace_all(text, "attenu ated", "attenuated"),
          text = str_replace_all(text, "\\boper ated", "operated"),
          text = str_replace_all(text, "appropri ated", "appropriated"),
@@ -1022,7 +695,6 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "cooper ated", "cooperated"),
          text = str_replace_all(text, "unaffili", "unaffiliated"),
          text = str_replace_all(text, "exagger ated", "exaggerated"),
-         
          text = str_replace_all(text, "jniver ~", "univers"),
          text = str_replace_all(text, "ca lamities", "calamities"),
          text = str_replace_all(text, "accaountantfacil", "accaountant facil "),
@@ -1052,7 +724,6 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "ccommunities", "communities"),
          text = str_replace_all(text, "certifi cates", "certificates"),
          text = str_replace_all(text, "cer tificates", "certificates"),
-         
          text = str_replace_all(text, "theadvancement", "the advancement"),
          text = str_replace_all(text, "thedevelopment", "the development"),
          text = str_replace_all(text, "thedivision", "the division"),
@@ -1111,7 +782,6 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "thecalifornia", "the california"),
          text = str_replace_all(text, "thestate", "the state"),
          text = str_replace_all(text, "theothers", "the others"),
-         
          text = str_replace_all(text, "andequipment", "and equipment"),
          text = str_replace_all(text, "andtreatment", "and treatment"),
          text = str_replace_all(text, "andgovernment", "and government"),
@@ -1497,7 +1167,6 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "annualreport", "annual-report"),
          text = str_replace_all(text, "\\bartis ans", "artisans"),
          text = str_replace_all(text, "\\bartis anal", "artisanal"),
-         # text = str_replace_all(text, "\\bagricul", "agriculture"),
          text = str_replace_all(text, "\\bagron omy", "agronomy"),
          text = str_replace_all(text, "\\bagron\\b", "agronomy"),
          text = str_replace_all(text, "\\brresearch", "research"),
@@ -1553,17 +1222,29 @@ data.clean.punct <- Corpus  %>%
          text = str_replace_all(text, "annouriced", "announced"),
          text = str_replace_all(text, "\\bmem\\sber(s)?", "member\\1"),
          text = str_replace_all(text, "resuits", "results"),
-         text = str_replace_all(text, "centrol", "central"))
+         text = str_replace_all(text, "centrol", "central"),
+         text = str_replace_all(text, "ofthe", "of the"),
+         text = str_replace_all(text, "thefirstsummers", "the first summers"),
+         text = str_replace_all(text, "ofbiotechnology", "of biotechnology"),
+         text = str_replace_all(text, "sorghummillet", "sorghum millet"),
+         text = str_replace_all(text, "andjgenetics", "and genetics"),
+         text = str_replace_all(text, "culturalpesticide", "cultural pesticide"))
+
+beep("ready")
+
+## Two ways of testing the objects are different
+identical(data.clean.no.punct, data.clean.punct)
+all.equal(data.clean.no.punct$text, data.clean.punct$text)
 
 
-## Changing the class of the object. The best class to see elements within an object is tibble ----
+## The best class to see elements within an object is tibble ----
 data.clean.no.punct <- tibble(data.clean.no.punct)
 save(data.clean.no.punct, file = "data.clean.no.punct.Rda")
 
 data.clean.punct <- tibble(data.clean.punct)
 save(data.clean.punct, file = "data.clean.punct.Rda")
 
-# 2nd Cleaning A, we do the tokenisation of the corpus WITHOUT PUNCTUATION and the 2nd layer ----
+# 2ndA, we do the tokenisation of the corpus WITHOUT PUNCTUATION and the 2nd layer ----
 # of cleaning (removing fragment of words, pseudowords and acronyms 
 tokenised.no.punct <- data.clean.no.punct %>% 
   unnest_tokens("words", "text", token = "regex", pattern = "\\s+") %>% 
@@ -1601,7 +1282,7 @@ tokenised.no.punct <- data.clean.no.punct %>%
 # TODO include at this level what we have cleaned with the POS.background
 save(tokenised.no.punct, file = "tokenised.no.punct.Rda")
 
-# 2nd Cleaning B, we do the tokenisation of the corpus WITH PUNCTUATION and the 2nd layer ----
+# 2ndB, we do the tokenisation of the corpus WITH PUNCTUATION and the 2nd layer ----
 # of cleaning (removing fragment of words, pseudowords and acronyms
 tokenised.punct <- data.clean.punct %>% 
   unnest_tokens("words", "text", token = "regex", pattern = "\\s+") %>% 
@@ -1638,14 +1319,15 @@ tokenised.punct <- data.clean.punct %>%
                         "foundationorg", "smns")))
 save(tokenised.punct, file = "tokenised.punct.Rda")
 
-# Count number of "and" & "the" ----
+# Frequencies ----
+## Count nº of "and" & "the" 
 freq.million <- tokenised.punct %>%
   group_by(Year) %>%
   count(words) %>% 
   mutate(freqmill =((n/sum(n))*1000000)) %>% 
   ungroup()
 
-freq.million.no.punct.nosw <- tokenised.no.punct %>%
+freq.million.no.punct <- tokenised.no.punct %>%
   group_by(Year) %>%
   count(words) %>% 
   mutate(freqmill =((n/sum(n))*1000000)) %>% 
@@ -1669,9 +1351,11 @@ save(freq.million, freq.million.and, freq.million.the, file = "freq.million.Rda"
 tokenised.no.punct.nsw <- anti_join(tokenised.no.punct, stop)
 save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
 
+
 # 4th Cleaning ----
 tokenised.punct <- tokenised.punct %>%
   mutate(words = str_replace_all(words, "approappropriation", "appropriation"),
+         words = str_remove_all(words, "org"),
          words = str_replace_all(words, "approappropriations", "appropriations"),
          words = str_replace_all(words, "approapproriations", "appropriations"),
          words = str_replace_all(words, "adadministration", "administration"),
@@ -2009,19 +1693,26 @@ tokenised.punct <- tokenised.punct %>%
          words = str_replace_all(words, "renfection", "reinfection"),
          words = str_replace_all(words, "\\bpsy\\schiatry", "psychiatry"),
          words = str_replace_all(words, "nstitute", "institute"),
-         words = str_replace_all(words, "associationtion", "association")) %>%
+         words = str_replace_all(words, "associationtion", "association"),
+         words = str_replace_all(words, "iinstitute", "institute"),
+         words = str_replace_all(words, "bology", "biology"),
+         words = str_replace_all(words, "fromindian", "from indian"),
+         words = str_replace_all(words, "administrationdivision", "administration division"),
+         words = str_replace_all(words, "childhoodood", "childhood"),
+         words = str_replace_all(words, "agriculturalrresearch", "agricultural-research"),
+         words = str_replace_all(words, "droughtrelated", "drought-related")) %>% 
   filter(!(words %in% c("tory", "tional", "tural", "ture", "cal", "medi", "na", 
                         "cul","©", "v", "f", "r", "p", "e", "t", "l", "m", "n", 
                         "b", "m.s", "na", "fe", "ab", "db", "appbopbu", 
                         "apphopbia", "tionb", "tlona", "$", "mem", "ix", "viii",
-                        "ogy", "sr.", "—a", "sss", "—lh", "—salary", "—support", 
-                        "pp", "©rants", "mr", "mr.", "&m","à", "—dr", "ip", 
-                        "ooo", "ps", "da", "b.sc", ".ft", "a.", "sr.", "a.b.",
-                        "a.m.", "univ.", ".v.m", "xmv", "am", "cc", "du", "candi")))
+                        "sr.", "—a", "sss", "—lh", "—salary", "—support", 
+                        "pp", "©rants", "mr", "mr.", "&m", "à", "—dr", "ip", 
+                        "ooo", "ps", "da", "b.sc", ".ft", "a.", "sr.", "a.b.", 
+                        "a.m.", "univ.", ".v.m", "xmv", "am", "cc", "du", "candi", 
+                        "jr", "iii", "illl", "iv"))
 
 tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
   mutate(words = str_replace_all(words, "approappropriation", "appropriation"),
-         # words = str_delete_all(words, "org"),
          words = str_replace_all(words, "approappropriations", "appropriations"),
          words = str_replace_all(words, "approapproriations", "appropriations"),
          words = str_replace_all(words, "adadministration", "administration"),
@@ -2360,7 +2051,14 @@ tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
          words = str_replace_all(words, "renfection", "reinfection"),
          words = str_replace_all(words, "\\bpsy\\schiatry", "psychiatry"),
          words = str_replace_all(words, "nstitute", "institute"),
-         words = str_replace_all(words, "associationtion", "association")) %>%
+         words = str_replace_all(words, "associationtion", "association"),
+         words = str_replace_all(words, "iinstitute", "institute"),
+         words = str_replace_all(words, "bology", "biology"),
+         words = str_replace_all(words, "fromindian", "from indian"),
+         words = str_replace_all(words, "administrationdivision", "administration division"),
+         words = str_replace_all(words, "childhoodood", "childhood"),
+         words = str_replace_all(words, "agriculturalrresearch", "agricultural-research"),
+         words = str_replace_all(words, "droughtrelated", "drought-related")) %>% 
   filter(!(words %in% c("tory", "tional", "tural", "ture", "cal", "medi", "na", 
                         "cul","©", "v", "f", "r", "p", "e", "t", "l", "m", "n", 
                         "b", "m.s", "na", "fe", "ab", "db", "appbopbu", 
@@ -2368,16 +2066,14 @@ tokenised.no.punct.nsw <- tokenised.no.punct.nsw %>%
                         "sr.", "—a", "sss", "—lh", "—salary", "—support", 
                         "pp", "©rants", "mr", "mr.", "&m", "à", "—dr", "ip", 
                         "ooo", "ps", "da", "b.sc", ".ft", "a.", "sr.", "a.b.", 
-                        "a.m.", "univ.", ".v.m", "xmv", "am", "cc", "du", "candi")))
+                        "a.m.", "univ.", ".v.m", "xmv", "am", "cc", "du", "candi", 
+                        "jr", "iii", "illl", "iv")))
 
 
-# TODO quoi faire avec ce table? 
-# table <- kable(head(tokenised.no.punct, 5)) %>%
-#   kableExtra::kable_styling() %>%
-#   kableExtra::add_header_above(c("Figure 3: " = 2))
-# 
-# save(tokenised.punct, file = "tokenised.punct.Rda")
-# save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
+# TODO copiar a partir de iinstitute en el objeto de arriba, also "jr"
+
+save(tokenised.punct, file = "tokenised.punct.Rda")
+save(tokenised.no.punct.nsw, file = "tokenised.no.punct.nsw.Rda")
 
 dc.np.final <- tokenised.no.punct.nsw %>% 
   group_by(Year) %>% 
@@ -2389,8 +2085,6 @@ dc.p.final <- tokenised.punct %>%
 
 save(dc.np.final, file = "dc.np.final.Rda")
 save(dc.p.final, file= "dc.p.final.Rda")
-
-# view(name of the object)
 
 # Grouping by year and counting words ----
 wordnumperyear <- tokenised.no.punct.nsw %>% 
@@ -2412,68 +2106,11 @@ wordnumperyear <- two_words %>%
 
 save(wordnumperyear, file = "wordnumperyear.Rda")
 
-
 wordnumperyear.punct <- tokenised.punct %>% 
   group_by(Year) %>% 
   count(words, sort=TRUE) %>% 
   top_n(n = 500, n)
 save(wordnumperyear.punct, file = "wordnumperyear.punct.Rda")
-
-# Creating a table per period for the whole of the corpus ----
-table.per.period <- tokenised.no.punct.nsw %>% 
-  mutate(period = cut(Year,c(0, 1919, 1929, 1939, 1945, 1955, 1965, 1975, 1985,
-                             1995, 2005, 2014), 
-                      labels = c("1913-1919", "1920-1929", "1930-1939", "1940-1945",
-                                 "1946-1955", "1956-1965", "1966-1975", "1976-1985",
-                                 "1986-1995", "1996-2005", "2006-2013")))  %>% 
-  group_by(period) %>% 
-  count(words) %>% 
-  filter(n> 10) 
-
-save(table.per.period, file = "table.per.period.Rda")
-# Creating a figure for the top20 words of whole corpus by period
-table.per.period %>% 
-  top_n(n, n = 20) %>% 
-  ggplot(aes(n, reorder_within(words, n, period), group = period))+
-  geom_col()+
-  facet_wrap(~period, scales = "free_y")+
-  scale_y_reordered()+
-  labs(y="TOP 20")+
-  theme(legend.position = "none") +
-  ggtitle("Figure 12: Top 20 words for the whole of the corpus")
-ggsave("graph-top20.png", units = "cm", width = 26, height = 30)
-
-# Creating a table per year for the whole of the corpus ----
-table.per.year <- tokenised.no.punct.nsw %>% 
-  group_by(Year) %>% 
-  count(words) %>% 
-  filter(n> 15) 
-
-save(table.per.year, file = "table.per.year.Rda")
-
-
-# # TF-IDF ----
-# testtf <- tokenised.no.punct.nsw %>% 
-#   group_by(Year) %>% 
-#   count(words, sort=TRUE) %>% 
-#   top_n(n=100, n) %>% 
-#   arrange(Year)
-# 
-# save(testtf, file = "testtf.Rda")
-
-# Comparing the number of words of early and late reports ----
-freq.rep <- summary(corpus(dc.np.final)) %>% 
-  select(Text, Tokens, Year)
-
-freq.rep %>% 
-  ggplot(aes(Year, Tokens)) +
-  geom_line() +
-  labs(y = "Number of words",
-       title = "Figure 1: Number of Words per Year") +
-  theme(legend.position = "none")
-
-ggsave("number.of.words.per.year.png", units = "cm", width = 26, height = 14)
-
 
 # Retrieving one specific document and one specific word ----
 # dc.np.final %>%
@@ -2486,3 +2123,18 @@ ggsave("number.of.words.per.year.png", units = "cm", width = 26, height = 14)
 # head_table <- head(data.clean.no.punct, n = 5)
 # kable_table <- knitr::kable(head_table)
 # print(kable_table)
+
+# Comparing the number of words of early and late reports ----
+freq.rep <- summary(corpus(dc.np.final)) %>% 
+  select(Text, Tokens, Year)
+
+freq.rep %>% 
+  ggplot(aes(Year, Tokens)) +
+  geom_line() +
+  labs(y = "Number of words",
+       title = "Figure X: Number of Words per Year") +
+  theme(legend.position = "none")
+
+ggsave("number.of.words.per.year.png", units = "cm", width = 26, height = 14)
+
+toc()

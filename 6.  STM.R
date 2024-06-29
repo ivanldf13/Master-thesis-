@@ -92,7 +92,7 @@ save(res10, file = "res10.Rda")
 ## 10 topics, only nouns ----
 set.seed(2216013)
 res10_nouns <- stm(documents = dfm_nouns,
-                   K=10,
+                   K=13,
                    prevalence = metadata,
                    max.em.its = 150,
                    # data=meta,
@@ -108,8 +108,9 @@ save(topics.dfm.10, file = "topics.dfm.10.Rda")
 
 ## What are the words belonging to each topic - only nouns ----
 labelTopics(res10_nouns, n = 20, frexweight = 0.25)
-,
-            topics = c(1, 3, 4, 5, 6, 8, 9, 10))
+# ,
+#             topics = c(1, 3, 4, 5, 6, 8, 9, 10))
+
 topics.dfm.10_nouns <- labelTopics(res10_nouns, n = 20, frexweight = 0.25, 
                                    topics = c(1, 3, 4, 5, 6, 8, 9, 10))
 

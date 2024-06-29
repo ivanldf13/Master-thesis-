@@ -7,7 +7,7 @@ load("dc.p.final.Rda")
 corpus <- corpus(dc.np.final, docid_field = "Year", text_field = "text")
 corpus.tokenised <- tokens(corpus)
 options(max.print = 1000)
-kwic(corpus.tokenised, pattern = "iiuiuiuv")
+kwic(corpus.tokenised, pattern = "ri")
 # TODO i had to add the text_field argument, et pourtant before it was working
 
 # , valuetype = "regex"
